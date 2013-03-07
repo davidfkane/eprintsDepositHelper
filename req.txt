@@ -1,0 +1,34 @@
+		EPRINTS SWORD REQUIREMENTS
+
+Use Cases
+---------
+
+Actors: - Depositors. Researchers and administrative assistants who
+	  want to deposit research papers into EPrints themselves.
+	- Repository Administrators. Librarians who are responsible
+	  for the institutional repository.
+
+UC1    A Depositor deposits a new paper into EPrints. The deposit
+       forms a new record with metadata and one or more documents (of
+       any format) attached.
+
+UC2    A Repository Administrator reviews a deposit made by a
+       Depositor. There are three possible outcomes:
+           1. The deposit is accepted.
+	   2. The deposit is rejected.
+	   3. The deposit is kept on hold pending more information
+       	      from the Depositor.
+
+
+Functionality
+-------------
+
+The SWORD EPrints PHP API is required to provide the following
+functionality in order to support use cases UC1 and UC2:
+
+F1. (UC1) Make a new eprint. 
+F2. (UC1) Add files to the eprint generated in F1.
+F3. (UC1) Add metadata such as title, authors, abstract etc. to the eprint
+          generated in F1.
+F4. (UC2) Associate Depositor contact information with the eprint
+          generated in F1.
