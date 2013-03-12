@@ -102,19 +102,23 @@ class EPrintsWrapper
 
     public function addFile($filename, $EPrintID, $contenttype)
     {
-	$data = array('name' => 'Foo', 'file' => '@'.$filename);
+      
+        $handle = fopen($filename, "r");
+        $contentlen = filesize($filename);
+        $data = fread($handle, $contentlen);
+        fclose($handle);
 	$ch = curl_init();
-	
+
 	curl_setopt($ch, CURLOPT_URL, $this->repoURL . "/id/eprint/" . $EPrintID . "/contents");
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: ' . $contenttype, 'Content-Disposition: attachment; filename=$filename'));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: ' . $contenttype, "Content-Disposition: attachment; filename=$filename"));
 	curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_setopt($ch, CURLOPT_POST,1);
-        //curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+       // curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
 	curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password);
 	curl_setopt($ch, CURLOPT_HEADER, 1);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 	
 	// Download the given URL, and return output
         $output = curl_exec($ch);
