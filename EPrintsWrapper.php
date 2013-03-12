@@ -13,11 +13,13 @@ class EPrintsWrapper
     private $unique_stamp;
     
     
-    function  __construct($repository, $username, $password, $EPid = false)
+    function  __construct($servicedocument, $username, $password, $EPid = false)
     {
         // leave this empty now
+        $xmlStruct = $this->getEPrintsFileFromURL($servicedocument, $username, $password);
+        $repository = explode('/', str_replace('http://', '', $servicedocument));
         $this->unique_stamp = time();
-	$this->repoURL = $repository;
+	$this->repoURL = 'http://' . $repository[0] . '/'; print "<h2>".$this->repoURL."</h2>";
         $this->username = $username;
         $this->password = $password;
         if($EPid)
@@ -60,7 +62,7 @@ class EPrintsWrapper
     {
         $this->username = $username;
         $this->password = $password;
-        $ch = curl_init();        
+        $ch = curl_init();          
         curl_setopt($ch, CURLOPT_URL, $repoURL);
         curl_setopt($ch, CURLOPT_REFERER, $this->referer);
         curl_setopt($ch, CURLOPT_USERAGENT, $this->useragent);     
@@ -72,6 +74,9 @@ class EPrintsWrapper
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);          // Timeout in seconds     
         $output = curl_exec($ch);  // Download the given URL, and return output
         curl_close($ch);  // Close the cURL resource, and free system resources
+        print("<textarea>$output</textarea>");
+        $outputstruct = new SimpleXMLElement($output);
+        return $outputstruct;
     }
  
 
@@ -95,15 +100,16 @@ class EPrintsWrapper
     }
  
 
-    public function addFile($filename, $EPrintID)
+    public function addFile($filename, $EPrintID, $contenttype)
     {
-	$data = array('name' => 'Foo', 'file' => '@'."$filename");
+	$data = array('name' => 'Foo', 'file' => '@'.$filename);
 	$ch = curl_init();
 	
 	curl_setopt($ch, CURLOPT_URL, $this->repoURL . "/id/eprint/" . $EPrintID . "/contents");
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/pdf', 'Content-Disposition: attachment; filename=$filename'));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: ' . $contenttype, 'Content-Disposition: attachment; filename=$filename'));
 	curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_setopt($ch, CURLOPT_POST,1);
+        //curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
 	curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password);
 	curl_setopt($ch, CURLOPT_HEADER, 1);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
