@@ -5,8 +5,9 @@ class EPrintsWrapper
     public $repoURL;
     public $username;
     public $password;
-    public $EPrintID;
+    public $EPrintID = 0;
     public $currentEPrintStructure;
+    private $debug = 1;
     private $uploadsdir = "/tmp/uploads/";
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
@@ -14,16 +15,27 @@ class EPrintsWrapper
     private $errorMessage = "";
     const ERROR_VALUE = -1;
     
+    private function debugOutput($string)
+    {
+        if($this->debug)
+        {
+            if(is_array($string))
+            {
+                print_r($string);
+            }else{
+                print $string;
+            }
+        }
+    }
     
     function  __construct($servicedocument, $username, $password, $EPid = false)
     {
-        // leave this empty now
-        $xmlStruct = $this->getEPrintsFileFromURL($servicedocument, $username, $password);
-        $repository = explode('/', str_replace('http://', '', $servicedocument));
-        $this->unique_stamp = time();
-	$this->repoURL = 'http://' . $repository[0] . '/'; print "<h2>".$this->repoURL."</h2>";
         $this->username = $username;
         $this->password = $password;
+        $xmlStruct = $this->getEPrintsXMLFromURL($servicedocument, $username, $password);
+        $repository = explode('/', str_replace('http://', '', $servicedocument));
+        $this->unique_stamp = time();
+	$this->repoURL = 'http://' . $repository[0] . '/'; $this->debugOutput("<h2 style=\"color: red\">".$this->repoURL."</h2>");
         if($EPid)
 	{
             $this->EPrintID = $EPid;
@@ -73,10 +85,10 @@ class EPrintsWrapper
     }
 
 
-    private function getEPrintsFileFromURL($repoURL, $username, $password)
+    private function getEPrintsXMLFromURL($repoURL)
     {
-        $this->username = $username;
-        $this->password = $password;
+        $username = $this->username;
+        $password = $this->password;
         $ch = curl_init();          
         curl_setopt($ch, CURLOPT_URL, $repoURL);
         curl_setopt($ch, CURLOPT_REFERER, $this->referer);
@@ -89,48 +101,47 @@ class EPrintsWrapper
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);          // Timeout in seconds     
         $output = curl_exec($ch);  // Download the given URL, and return output
         curl_close($ch);  // Close the cURL resource, and free system resources
-        print("<textarea>$output</textarea>");
+        $this->debugOutput("<textarea>$output</textarea>");
         $outputstruct = new SimpleXMLElement($output);
         return $outputstruct;
     }
- 
-
-    public function getEPrintsMetadata($repoURL, $username, $password){
-        $this->repoURL = $repoURL;
-        $ch = curl_init();        
-        curl_setopt($ch, CURLOPT_URL, $this->repoURL);
-        curl_setopt($ch, CURLOPT_REFERER, $this->referer);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->useragent);     
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/vnd.eprints.data+xml')); // using eprints xml
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password); 
-        curl_setopt($ch, CURLOPT_HEADER, 0);            // Include header in result? (0 = yes, 1 = no)   
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Should cURL return or print out the data? (true = return, false = print)   
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);          // Timeout in seconds     
-        $output = curl_exec($ch);  // Download the given URL, and return output
-        print $output;
-        $this->currentEPrintStructure = new SimpleXMLElement($output);
-        
-        curl_close($ch);  // Close the cURL resource, and free system resources
+    public function getEPrintsMetadata(){
+        if($this->EPrintID != 0)
+        {
+            $this->currentEPrintStructure = $this->getEPrintsXMLFromURL($this->repoURL . '/id/eprint/' . $this->EPrintID);
+        }        
     }
 
 
-    public function addFile($filename, $EPrintID, $contenttype)
+    public function addFile($filepath, $EPrintID, $contenttype)
     {
-      
-        $handle = fopen($filename, "r");
-        $contentlen = filesize($filename);
-        $data = fread($handle, $contentlen);
-        fclose($handle);
+        if($this->EPrintID == 0)
+        {
+            $this->errorMessage = "Eprint ID not set";
+            return -1;
+        }else{
+            $handle = fopen($filepath, "r");
+            $contentlen = filesize($filepath);
+            $data = fread($handle, $contentlen);
+            fclose($handle);
+            $expl = explode('/', $filepath);
+            $filename = $expl[count($expl)-1];
+            $this->addFileData($filename, $data, $contenttype);
+            return 1;
+        }
+        
+    }
+    private function addFileData($filename, $data, $contenttype)
+    {
+        
 	$ch = curl_init();
-
-	curl_setopt($ch, CURLOPT_URL, $this->repoURL . "/id/eprint/" . $EPrintID . "/contents");
-	curl_setopt($ch, CURLOPT_URL, $EPrintURL);
+	curl_setopt($ch, CURLOPT_URL, $this->repoURL . "/id/eprint/" . $this->EPrintID . "/contents");
+	//curl_setopt($ch, CURLOPT_URL, $EPrintURL);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: ' . $contenttype, "Content-Disposition: attachment; filename=$filename"));
 	curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_setopt($ch, CURLOPT_POST,1);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-       // curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
 	curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password);
 	curl_setopt($ch, CURLOPT_HEADER, 1);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -146,7 +157,7 @@ class EPrintsWrapper
 
 	if($statusCode == 201)
 	{
-	    print"<div class=\"textarea2\"><textarea rows='30' cols='120'>Output: ".$response."</textarea></div>";
+	    $this->debugOutput("<div class=\"textarea2\"><textarea rows='30' cols='120'>Output: ".$response."</textarea></div>");
 	}
 	else
 	{
@@ -177,13 +188,13 @@ class EPrintsWrapper
         $response = curl_exec($ch);
 	curl_close($ch);              // Close the cURL resource, and free system resources
         fclose($fh);
-
+        
 	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
 	$statusCode = $this->checkStatusCode($responseHeader);
 	if($statusCode == 201)
 	{
 	    $this->EPrintID = $this->getEPrintID($responseBody);
-	    print"<textarea class=\"textarea2\">Output: ".$responseHeader."\n".$responseBody."</textarea>";
+	    $this->debugOutput("<textarea class=\"textarea2\">Output: ".$responseHeader."\n".$responseBody."</textarea>");
 	    return $this->getEPrintID($responseBody);
 	    //return $this->EPrintID;
 	}
@@ -199,7 +210,7 @@ class EPrintsWrapper
     {
 	$cleanedHeader = $this->cleanHeader($header);
 	$pattern = '/^http\/1.1\s+(\d{3})\s+.*/';
-	$headerLines = preg_split('/$\R?^/m', $header);print_r($headerLines); $cnt = sizeOf($headerLines);
+	$headerLines = preg_split('/$\R?^/m', $header);$this->debugOutput($headerLines); $cnt = sizeOf($headerLines);
 	foreach($headerLines as $line)
 	{
 	    $lowerCase = strtolower($line);
@@ -210,8 +221,7 @@ class EPrintsWrapper
 		    return $matches[1];
 		}
 	    }
-	}
-	
+	}	
 	// Unable to parse out any status code at all
 	return -1;
     }
