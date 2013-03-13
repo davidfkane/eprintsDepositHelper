@@ -17,7 +17,7 @@ require('./EPrintsWrapper.php');
 
 
 # adds a file to an existing eprint.
-$crl = new EPrintsWrapper('http://witeprints/sword-app/servicedocument', 'dkane', 'maggots22', 1);
+$crl = new EPrintsWrapper('http://witeprints/sword-app/servicedocument', 'dkane', 'dkpass', 1);
 $crl->addFile('/var/www/eprintsDepositHelper/dandelion2.JPG', 1, 'image/jpeg');
 
 
