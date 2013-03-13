@@ -10,7 +10,7 @@
 <h1>eprintsDepositHelper</h1>
 <hr/>
 <ul>
-<li><a href="addFile.php">Add file example</a></li>
+<li><a href="addfile.php">Add file example</a></li>
 <li><a href="createNewEPrint.php">Create New EPrint example</a></li>
 </ul>
 <hr/>
