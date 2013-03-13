@@ -1,5 +1,6 @@
 <html><body>
 <head>
+    <title>eprintsDepositHelper Index.php</title>
     <style>
         .textarea1{background-color: pink;}
         .textarea2{background-color: lightgreen;}
@@ -15,9 +16,12 @@
 error_reporting(E_ALL);
 require('./EPrintsWrapper.php');
 
-
 # adds a file to an existing eprint.
+
+# Constructor  - EPrintsWrapper(servicedocument_url, username, password, eprintid)
 $crl = new EPrintsWrapper('http://witeprints/sword-app/servicedocument', 'dkane', 'dkpass', 1);
+
+# Add a file - addFile(file_location, eprint_id, MIME_type)
 $crl->addFile('/var/www/eprintsDepositHelper/dandelion2.JPG', 1, 'image/jpeg');
 
 
