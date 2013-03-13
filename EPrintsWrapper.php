@@ -11,6 +11,8 @@ class EPrintsWrapper
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
     private $unique_stamp;
+    private $errorMessage = "";
+    const ERROR_VALUE = -1;
     
     
     function  __construct($servicedocument, $username, $password, $EPid = false)
@@ -32,6 +34,7 @@ class EPrintsWrapper
         }
     }
 
+    
     private function newEPrint()
     {
         // generate XML for new blank generic EPrint
@@ -55,6 +58,18 @@ class EPrintsWrapper
                           </eprint>
                         </eprints>";
         $this->currentEPrintStructure = new SimpleXMLElement($filestring);
+    }
+
+
+    public function getErrorMessage()
+    {
+	return $this->errorMessage;
+    }
+
+    
+    public function setXML($xmlString)
+    {
+	$this->currentEPrintStructure = new SimpleXMLElement($xmlString);
     }
 
 
@@ -98,7 +113,7 @@ class EPrintsWrapper
         
         curl_close($ch);  // Close the cURL resource, and free system resources
     }
- 
+
 
     public function addFile($filename, $EPrintID, $contenttype)
     {
@@ -110,6 +125,7 @@ class EPrintsWrapper
 	$ch = curl_init();
 
 	curl_setopt($ch, CURLOPT_URL, $this->repoURL . "/id/eprint/" . $EPrintID . "/contents");
+	curl_setopt($ch, CURLOPT_URL, $EPrintURL);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: ' . $contenttype, "Content-Disposition: attachment; filename=$filename"));
 	curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_setopt($ch, CURLOPT_POST,1);
@@ -120,10 +136,24 @@ class EPrintsWrapper
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 	
-	// Download the given URL, and return output
-        $output = curl_exec($ch);
-        print"<div class=\"textarea2\"><textarea rows='30' cols='120'>Output: ".$output."</textarea></div>";
-        curl_close($ch);  // Close the cURL resource, and free system resources
+	// The headers returned are different from commitNewEPrint, there is now a leading 100 Continue
+	// that needs to be removed
+	$response = curl_exec($ch);
+	curl_close($ch);  // Close the cURL resource, and free system resources
+
+	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
+	$statusCode = $this->checkStatusCode($responseBody);    // cannot just call checkStatusCode(), must use $this
+
+	if($statusCode == 201)
+	{
+	    print"<div class=\"textarea2\"><textarea rows='30' cols='120'>Output: ".$response."</textarea></div>";
+	}
+	else
+	{
+	    $this->errorMessage = $response;
+	    return false;
+	}
+	return true;
     }
 
 
@@ -136,25 +166,73 @@ class EPrintsWrapper
         fseek($fh, 0);
         $contentlen = strlen($post);
 	curl_setopt($ch, CURLOPT_URL, $this->repoURL . "/id/contents");
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/vnd.eprints.data+xml')); 
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/vnd.eprints.data+xml'));
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_setopt($ch, CURLOPT_POST,1);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password); 
+        curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password);
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        $response  = curl_exec($ch);
-
-	list($response_header, $response_body) = explode("\r\n\r\n", $response, 2);
-	$outputstruct = new SimpleXMLElement($response_body);
-
-        $this->EPrintID = str_replace($this->repoURL . '/id/eprint/', '', $outputstruct->id);
-
-        print"<textarea class=\"textarea2\">Output: ".$response_header."\n".$response_body."</textarea>";
-        curl_close($ch);  // Close the cURL resource, and free system resources
+        $response = curl_exec($ch);
+	curl_close($ch);              // Close the cURL resource, and free system resources
         fclose($fh);
-        return $this->EPrintID;
-    }    
+
+	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
+	$statusCode = $this->checkStatusCode($responseHeader);
+	if($statusCode == 201)
+	{
+	    $this->EPrintID = $this->getEPrintID($responseBody);
+	    print"<textarea class=\"textarea2\">Output: ".$responseHeader."\n".$responseBody."</textarea>";
+	    return $this->getEPrintID($responseBody);
+	    //return $this->EPrintID;
+	}
+	else
+	{
+	    $this->errorMessage = $response;
+	    return EPrintsWrapper::ERROR_VALUE;
+	}
+    }
+
+
+    private function checkStatusCode($header)
+    {
+	$cleanedHeader = $this->cleanHeader($header);
+	$pattern = '/^http\/1.1\s+(\d{3})\s+.*/';
+	$headerLines = preg_split('/$\R?^/m', $header);print_r($headerLines); $cnt = sizeOf($headerLines);
+	foreach($headerLines as $line)
+	{
+	    $lowerCase = strtolower($line);
+	    if($lowerCase != "http/1.1 100 continue")
+	    {
+		if(preg_match($pattern, $lowerCase, $matches) == 1)
+		{
+		    return $matches[1];
+		}
+	    }
+	}
+	
+	// Unable to parse out any status code at all
+	return -1;
+    }
+
+
+    // Remove superflous leading '100' code from headers returned when you've added a new file to an existing EPrint
+    private function cleanHeader($header)
+    {
+	$pattern = '/^(HTTP\/1.1 100 Continue\r\n\r\n)(.*)/';
+	$replacement = '$2';
+	
+	return preg_replace($pattern, $replacement, $header);
+    }
+
+
+    private function getEPrintID($response)
+    {
+	$outputstruct = new SimpleXMLElement($response);
+	$eprintURL = (string)$outputstruct->id;
+	$eprintID = str_replace($this->repoURL . 'id/eprint/', "", $eprintURL);
+	return $eprintID;
+    }
 }
 ?>
