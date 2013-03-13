@@ -23,7 +23,9 @@ require('./EPrintsWrapper.php');
 $crl = new EPrintsWrapper('http://witeprints/sword-app/servicedocument', 'dkane', 'dkpass', 1);
 
 # Add a file - addFile(file_location, eprint_id, MIME_type)
-$crl->addFile('/var/www/eprintsDepositHelper/dandelion2.JPG', 1, 'image/jpeg');
+#$crl->addFile('/var/www/eprintsDepositHelper/dandelion2.JPG', 1, 'image/jpeg');
+
+$crl->addFile('./example_eprint_files.xml', 1, 'application/vnd.eprints.data+xml');
 
 
 //print "<td valign=\"top\"><pre>"; print_r($crl->currentEPrintStructure); print "</pre></td></tr></table><hr/>";
