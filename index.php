@@ -12,6 +12,7 @@
 <ul>
 <li><a href="addfile.php">Add file example</a></li>
 <li><a href="createNewEPrint.php">Create New EPrint example</a></li>
+<li><a href="/depositforms">Deposit Forms</a></li>
 </ul>
 <hr/>
 <p>This is an implementation of the php CURL functionality in EPrints.</p>
