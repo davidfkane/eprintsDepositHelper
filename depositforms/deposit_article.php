@@ -426,10 +426,29 @@
 		    $metadata->date = parseDate(trim($_POST['year']), trim($_POST['month']), trim($_POST['day']));
 		    
 		    // Write an XML file for the metadata
-		    $xml_writer = new EPrintsXMLWriter($metadata, "eprints.xml");
-		    $eprints_xml = $xml_writer->writeString();
+		    #$xml_writer = new EPrintsXMLWriter($metadata, "eprints.xml");
+		    
+		    print("<textarea cols=\"200\" rows=\"100\"");
+		    print_r($metadata);
+		    print("</textarea>");
+		    
+		    /*
+		     * put eprint xml building functions here
+		     *
+		     */
+		    
+		     
 		    $wrapper = new EPrintsWrapper('http://witeprints/sword-app/servicedocument', 'dkane', 'dkpass');
-		    $wrapper->setXML($eprints_xml);
+		    
+		    #$eprints_xml = $xml_writer->writeString();
+		    
+		    #$wrapper->setXML($eprints_xml);
+		    
+		    
+		    /*
+		     * put eprint xml building functions here
+		     *
+		     */
 		    
 		    $new_id = $wrapper->commitNewEPrint();
 		    if($new_id != -1)
