@@ -6,6 +6,7 @@ class EPrintsWrapper
     public $username;
     public $password;
     public $EPrintID = 0;
+    public $EPrintCreators = array();
     public $currentEPrintStructure;
     private $debug = 1;
     private $uploadsdir = "/tmp/uploads/";
@@ -244,5 +245,111 @@ class EPrintsWrapper
 	$eprintID = str_replace($this->repoURL . 'id/eprint/', "", $eprintURL);
 	return $eprintID;
     }
+    
+
+    ########################################################################################################
+    #                                                                                                      #
+    #                                                                                                      #
+    #      Public Functions for Building XML = to replace/incorporate the function of XMLWriter.php        #
+    #                                                                                                      #
+    #                                                                                                      #
+    ########################################################################################################
+    
+    
+    /**
+     * Adds creators to a mutidimensional array, which is a class variable.  This class variable is then used in the
+     * addEprintMetaData() function, which must be used only when all the creators have been added.
+     *
+     * @param string $family
+     * @param string $given
+     * @param string $id
+     *
+     */
+    public function addCreator($family, $given, $id)
+    {
+        array_push($this->EPrintCreators, array('family'=>$family, 'given'=>$given, 'id'=>$id));
+    }
+    
+    
+    
+    /**
+     * Adds the general EPrint metadata to the class representation of the EPrint
+     *
+     * @param string $title title of paper or whatever
+     * @param string $type mime-type
+     * @param array $creators multidimensional array of creator names and emails
+     *
+     */
+    public function addEprintMetaData($title, $type)
+    {
+        $status = "inbox";
+        $mdataVis = "show";
+        $count = 0;
+        $ep = $crl->currentEPrintStructure->eprint;
+        
+        $ep->title = $title;
+        $ep->eprint_status = $status;
+        #$ep->userid = "1";
+        $ep->type = $type;
+        $ep->metadata_visibility = $mdataVis;
+        foreach($this->EPrintCreators as $creator)
+        {
+            $ep->creators->item[$count]->name->family = $creator['family'];
+            $ep->creators->item[$count]->name->given = $creator['given'];
+            $ep->creators->item[$count]->id = $creator['id'];
+            $count++;
+        }
+    }
+    
+    
+    
+    /**
+     * Adds individual documents to the class representation of the EPrint, including the hashes
+     * and the base64 encoded files themselves.
+     *
+     * @param string $data very long string representing the file
+     * @param string $filename name of file
+     * @param string $mimetype mime-type
+     * @param string $security
+     * @param string $format
+     * @param integer $docnum there could be several documents per EPrint (normally just one)
+     * @param integer $filenum there could be several files per document (normally just one)
+     *
+     */
+    public function addDocument($data, $filename, $mimetype, $security, $format, $docNum = 1, $filenum = 1)
+    {
+        $filezize = strlen($data);
+        $docNum -= 1;
+        $filenum -= 1;
+        # $hashtype = "MD5";
+        # $encoding = "base64";
+        $lang = "en";
+        $datasetid = "document";
+        $DocumentFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum];
+        $FileFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum]->files->file[$filenum];
+        
+        $FileFragment->filename = $filename;
+        $FileFragment->datasetid = $datasetid;
+        $FileFragment->mimetype = $mimetype;
+        $FileFragment->hash = md5($data);
+        $FileFragment->data = base64_encode($data);
+        $FileFragment->hash_type = $hashtype;
+        $FileFragment->filesize = $filezize;
+        $FileFragment->mtime = date("Y-m-d H:i:s");
+        $FileFragment->data->attributes()->encoding = $encoding;
+        
+        $XMLFragment->mime_type = $mimetype;
+        $XMLFragment->language = $lang;
+        $XMLFragment->security = $security;
+        $XMLFragment->format = $format;
+        $XMLFragment->main = $filename;
+    }
+    
+    
+    
+    
+    
+    
+    
 }
 ?>
