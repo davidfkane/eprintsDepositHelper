@@ -8,6 +8,7 @@ class EPrintsWrapper
     public $EPrintID = 0;
     public $EPrintCreators = array();
     public $currentEPrintStructure;
+    
     private $journalName;
     private $volume;
     private $issue;
@@ -18,6 +19,7 @@ class EPrintsWrapper
     private $depositorEmail;
     private $depositorAffiliation;
     private $additionalInformation;
+    
     private $debug = 1;
     private $uploadsdir = "/tmp/uploads/";
     private $referer = "http://library.wit.ie/eprints/deposit/form";

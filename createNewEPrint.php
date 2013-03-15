@@ -17,6 +17,7 @@ require('./EPrintsWrapper.php');
 $crl = new EPrintsWrapper('username', 'password');  // no eprintid means that this is a new eprint.
 //print "<table><tr><td valign=\"top\"><pre>"; print_r($crl->currentEPrintStructure); print "</pre></td>";
 $crl->currentEPrintStructure->eprint->title = "David Kane's second Paper";
+
 $crl->currentEPrintStructure->eprint->documents->document[0]->files->file[0]->filename = "my filename";
 $crl->currentEPrintStructure->eprint->documents->document[0]->files->file[0]->datasetid = "document";
 $crl->currentEPrintStructure->eprint->documents->document[0]->files->file[0]->filename = "example.php";
@@ -44,6 +45,9 @@ $crl->currentEPrintStructure->eprint->documents->document[0]->language = "en";
 $crl->currentEPrintStructure->eprint->documents->document[0]->security = "public";
 $crl->currentEPrintStructure->eprint->documents->document[0]->format = "text";
 $crl->currentEPrintStructure->eprint->documents->document[0]->main = "example.php";
+
+
+
 $crl->currentEPrintStructure->eprint->eprint_status = "inbox";
 $crl->currentEPrintStructure->eprint->userid = "1";
 $crl->currentEPrintStructure->eprint->type = "article";
