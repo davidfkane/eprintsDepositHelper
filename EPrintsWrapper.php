@@ -8,6 +8,16 @@ class EPrintsWrapper
     public $EPrintID = 0;
     public $EPrintCreators = array();
     public $currentEPrintStructure;
+    private $journalName;
+    private $volume;
+    private $issue;
+    private $year;
+    private $month;
+    private $day;
+    private $depositorName;
+    private $depositorEmail;
+    private $depositorAffiliation;
+    private $additionalInformation;
     private $debug = 1;
     private $uploadsdir = "/tmp/uploads/";
     private $referer = "http://library.wit.ie/eprints/deposit/form";
@@ -236,7 +246,7 @@ class EPrintsWrapper
 	
 	return preg_replace($pattern, $replacement, $header);
     }
-
+    
 
     private function getEPrintID($response)
     {
@@ -257,7 +267,7 @@ class EPrintsWrapper
     
     
     /**
-     * Adds creators to a mutidimensional array, which is a class variable.  This class variable is then used in the
+     * Adds creators to a multidimensional array, which is a class variable.  This class variable is then used in the
      * addEprintMetaData() function, which must be used only when all the creators have been added.
      *
      * @param string $family
@@ -270,10 +280,109 @@ class EPrintsWrapper
         array_push($this->EPrintCreators, array('family'=>$family, 'given'=>$given, 'id'=>$id));
     }
     
-    
+
+    /**
+     * Adds a journal name for the new eprint. 
+     * 
+     * @param string $journal
+     *
+     */
+    public function addJournal($journal)
+    {
+	$this->journalName = $journal;
+    }
+
+
+    /**
+     * Adds a volume for the new eprint.
+     *
+     * @param int $volume
+     *
+     */
+    public function addVolume($volume)
+    {
+	$this->volume = $v;
+    }
+
     
     /**
-     * Adds the general EPrint metadata to the class representation of the EPrint
+     * Adds an issue number for the new eprint.
+     *
+     * @param int $volume
+     *
+     */
+    public function addIssue($issue)
+    {
+	$this->issue = $i;
+    }
+
+
+    /**
+     * Adds year of publication for the new eprint.
+     *
+     * @param int $year
+     *
+     */
+    public function addYear($year)
+    {
+	$this->year = $y;
+    }
+
+    
+    /**
+     * Adds month of publication for the new eprint.
+     *
+     * @param int $month
+     *
+     */
+    public function addMonth($month)
+    {
+	$this->month = $m;
+    }
+    
+
+    /**
+     * Adds day of publication for the new eprint.
+     *
+     * @param int $day
+     *
+     */
+    public function addDay($day)
+    {
+	$this->day = $day;
+    }
+
+
+    /**
+     * Adds information about the depositor for the new eprint.
+     * @param string name
+     * @param string email
+     * @param string affiliation
+     *
+     */
+    public function addDepositor($name, $email, $affiliation)
+    {
+	$this->depositorName = $name;
+	$this->depositorEmail = $email;
+	$this->depositorAffiliation = $affiliation;
+    }
+
+
+    /**
+     * Adds a note to for the new eprint. This could be e.g. a message from the depositor.
+     *
+     * @param string note
+     *
+     */
+    public function addNote($note)
+    {
+	$this->additionalInformation = $note;
+    }
+
+    
+    /**
+     * Adds the general EPrint metadata to the class representation of the EPrint. This actually creates XML
+     * and so must be called only once.
      *
      * @param string $title title of paper or whatever
      * @param string $type mime-type
@@ -289,7 +398,6 @@ class EPrintsWrapper
         
         $ep->title = $title;
         $ep->eprint_status = $status;
-        #$ep->userid = "1";
         $ep->type = $type;
         $ep->metadata_visibility = $mdataVis;
         foreach($this->EPrintCreators as $creator)
@@ -299,6 +407,8 @@ class EPrintsWrapper
             $ep->creators->item[$count]->id = $creator['id'];
             $count++;
         }
+
+	
     }
     
     
@@ -318,7 +428,7 @@ class EPrintsWrapper
      */
     public function addDocument($data, $filename, $mimetype, $security, $format, $docNum = 1, $filenum = 1)
     {
-        $filezize = strlen($data);
+        $filesize = strlen($data);
         $docNum -= 1;
         $filenum -= 1;
         # $hashtype = "MD5";
@@ -334,15 +444,15 @@ class EPrintsWrapper
         $FileFragment->hash = md5($data);
         $FileFragment->data = base64_encode($data);
         $FileFragment->hash_type = $hashtype;
-        $FileFragment->filesize = $filezize;
+        $FileFragment->filesize = $filesize;
         $FileFragment->mtime = date("Y-m-d H:i:s");
         $FileFragment->data->attributes()->encoding = $encoding;
         
-        $XMLFragment->mime_type = $mimetype;
-        $XMLFragment->language = $lang;
-        $XMLFragment->security = $security;
-        $XMLFragment->format = $format;
-        $XMLFragment->main = $filename;
+        $DocumentFragment->mime_type = $mimetype;
+        $DocumentFragment->language = $lang;
+        $DocumentFragment->security = $security;
+        $DocumentFragment->format = $format;
+        $DocumentFragment->main = $filename;
     }
     
     
