@@ -1,0 +1,35 @@
+noscript {
+    color: maroon;
+    font-style: italic;
+}
+
+input {    width: 50em;}
+input#year {    width: 5em;}
+input#submit {    width: 10em;    float: left;}
+label.floatable {    float: left;    width: 15em;}
+label.nonfloatable {    width: 15em;}
+label#yearlabel {    padding-left: 0em;}
+p.submitmessage {    font-style: bold;    color: red;}
+div#delaymessage {    font-styl: italic;    font-size: 0.9em;}
+
+span.optional {    font-style: italic;    font-size: 0.85em;}
+span.helpexample {    color: blue;    font-weight: bold;}
+
+
+thheadingcell_left {    border-bottom: dashed 1px #bbf;    border-right: dashed 1px #bbf;    text-align: center;}
+th.headingcell_center {    border-bottom: dashed1px #bbf;    border-right: dashed 1px #bbf;    text-align: center;}
+th.headingcell_right {    border-bottom: dashed 1px #bbf;    text-align: center;}
+tdleftcell {    border-bottom: dashed 1px #bbf;    border-right: dashed 1px #bbf;    text-align: left;}
+td.middlecell {    border-bottom: dashed 1px #bbf;   border-right: dashed 1px #bbf;    text-align: left;    padding-left: 0.4em;    padding-right: 0.4em;}
+td.rightcell {    border-bottom: dashed 1px #bbf;    padding-left: 0.4em;}
+td.bottomleftcell {    border-right: dashed 1px #bbf;    text-align: left;}
+td.bottommiddlecell {    border-right: dashed 1px #bbf;    text-align: left;    padding-left: 0.4em;    padding-right: 0.4em;}
+td.bottomrightcell {    padding-left: 0.4em;}
+table.helptable {    margin-top: 3em;    margin-bottom: 3em;}
+table.helptable td {    padding-top: 0.75em;    padding-bottom: 0.75em;}
+table.helptable th {    padding-bottom: 0.5em;}
+body {    min-width: 50em;}
+
+ #authorcontainer p{margin:3px; } 
+/*#authorcontainer p.firstauthor{margin:3px; visibility: visible;}*/
+#authorcontainer{background-color: #cfcfcf; padding: 14px;}
