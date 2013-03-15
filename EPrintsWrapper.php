@@ -9,16 +9,17 @@ class EPrintsWrapper
     public $EPrintCreators = array();
     public $currentEPrintStructure;
     
-    private $journalName;
-    private $volume;
-    private $issue;
-    private $year;
-    private $month;
-    private $day;
-    private $depositorName;
-    private $depositorEmail;
-    private $depositorAffiliation;
-    private $additionalInformation;
+    public $journalName;
+    public $volume;
+    public $issue;
+    public $year;
+    public $month;
+    public $day;
+    public $depositorName;
+    public $depositorEmail;
+    public $depositorAffiliation;
+    public $additionalInformation;
+    public $note = "";
     
     private $debug = 1;
     private $uploadsdir = "/tmp/uploads/";
@@ -126,7 +127,7 @@ class EPrintsWrapper
     }
 
 
-    public function addFile($filepath, $EPrintID, $contenttype)
+    public function addFile($filepath, $EPrintID, $contenttype, $name = 0)
     {
         if($this->EPrintID == 0)
         {
@@ -137,8 +138,10 @@ class EPrintsWrapper
             $contentlen = filesize($filepath);
             $data = fread($handle, $contentlen);
             fclose($handle);
-            $expl = explode('/', $filepath);
-            $filename = $expl[count($expl)-1];
+            if($name == 0){
+                $expl = explode('/', $filepath);
+                $filename = $expl[count($expl)-1];                
+            }
             $this->addFileData($filename, $data, $contenttype);
             return 1;
         }
