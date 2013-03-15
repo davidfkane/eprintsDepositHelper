@@ -408,7 +408,11 @@ class EPrintsWrapper
             $count++;
         }
 
-	
+	$ep->publication = $this->journalName;
+	$ep->volume = $this->volume;
+	$ep->issue = $this->issue;
+	$ep->date = $this->generateDateString();
+	$ep->contact_email = $this->depositorEmail;
     }
     
     
@@ -457,9 +461,29 @@ class EPrintsWrapper
     
     
     
+    // Generates a date of the form "YYYY-MM-DD
+    private function generateDateString()
+    {
+	$date = "";
+	if(!is_null($$this->year) && strlen($$this->year) > 0)
+	    $date = $date . $this->year;
+	else return $date;
+	
+	if(!is_null($this->month) && strlen($this->month) > 0 && $this->month != "Unspecified")
+	    $date = $date . "-" . $this->month;
+	else return $date;
+	
+	if(!is_null($this->date) && strlen($this->date) > 0 && $this->date != "Unspecified")
+	    $date = $date . "-" . $this->date;
+	return $date;
+    }
     
     
-    
-    
+    // Generates a short informational note for the reviewer. EPrints XML doesn't support much depositor
+    // information, so leave it in the comments(?)
+    private function generateNote()
+    {
+	return $this->additionalInformation . "\n    SWORD: deposited by $this->depositorName ($this->depositorAffiliation)\n";
+    }
 }
 ?>
