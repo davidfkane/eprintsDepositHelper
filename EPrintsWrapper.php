@@ -68,19 +68,6 @@ class EPrintsWrapper
 	$filestring = "<?xml version='1.0' encoding='utf-8'?>
                         <eprints xmlns='http://eprints.org/ep2/data/2.0'>
                           <eprint>
-                            <eprint_status>archive</eprint_status>
-                            <userid>1</userid>
-                            <type>image</type>
-                            <creators>
-                              <item>
-                                <name>
-                                  <family>Sword</family>
-                                  <given>Tester</given>
-                                </name>
-                                <id>test@test.com</id>
-                              </item>
-                            </creators>
-                            <title>using the eprintid from the initial creation</title>
                           </eprint>
                         </eprints>";
         $this->currentEPrintStructure = new SimpleXMLElement($filestring);
@@ -127,21 +114,26 @@ class EPrintsWrapper
     }
 
 
-    public function addFile($filepath, $EPrintID, $contenttype, $name = 0)
+    public function addFile($filepath, $EPrintID, $contenttype, $name = NULL)
     {
         if($this->EPrintID == 0)
         {
             $this->errorMessage = "Eprint ID not set";
             return -1;
-        }else{
+        }
+	else
+	{
             $handle = fopen($filepath, "r");
             $contentlen = filesize($filepath);
             $data = fread($handle, $contentlen);
             fclose($handle);
-            if($name == 0){
+
+            if($name == NULL)
+	    {
                 $expl = explode('/', $filepath);
-                $filename = $expl[count($expl)-1];                
+                $filename = $expl[count($expl)-1];
             }
+	    else $filename = $name;
             $this->addFileData($filename, $data, $contenttype);
             return 1;
         }
@@ -399,7 +391,7 @@ class EPrintsWrapper
         $status = "inbox";
         $mdataVis = "show";
         $count = 0;
-        $ep = $crl->currentEPrintStructure->eprint;
+        $ep = $this->currentEPrintStructure->eprint;
         
         $ep->title = $title;
         $ep->eprint_status = $status;
@@ -418,6 +410,7 @@ class EPrintsWrapper
 	$ep->issue = $this->issue;
 	$ep->date = $this->generateDateString();
 	$ep->contact_email = $this->depositorEmail;
+	$ep->note = $this->additionalInformation;
     }
     
     
@@ -470,7 +463,7 @@ class EPrintsWrapper
     private function generateDateString()
     {
 	$date = "";
-	if(!is_null($$this->year) && strlen($$this->year) > 0)
+	if(!is_null($this->year) && strlen($this->year) > 0)
 	    $date = $date . $this->year;
 	else return $date;
 	
