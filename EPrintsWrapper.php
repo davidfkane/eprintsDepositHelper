@@ -139,6 +139,30 @@ class EPrintsWrapper
         }
         
     }
+
+
+    public function addFile2($filepath, $contenttype, $name = NULL)
+    {
+	$handle = fopen($filepath, "r");
+	$contentlen = filesize($filepath);
+	//$data = fread($handle, $contentlen);
+	$data = file_get_contents($filepath);
+	fclose($handle);
+	
+	if($name == NULL)
+	{
+	    $expl = explode('/', $filepath);
+	    $filename = $expl[count($expl)-1];
+	}
+	else $filename = $name;
+	//$this->addFileData($filename, $data, $contenttype);
+
+	$this->addDocument($data, $filename, "application/pdf", "public", "application/pdf");
+	return 1;
+    }
+
+
+
     private function addFileData($filename, $data, $contenttype)
     {
         
@@ -433,28 +457,44 @@ class EPrintsWrapper
         $filesize = strlen($data);
         $docNum -= 1;
         $filenum -= 1;
-        # $hashtype = "MD5";
-        # $encoding = "base64";
+        $hashtype = "MD5";
+        $encoding = "base64";
         $lang = "en";
         $datasetid = "document";
         $DocumentFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum];
-        $FileFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum]->files->file[$filenum];
+
+	$ep = $this->currentEPrintStructure->eprint;
+	$ep->documents->document[$docNum]->file->filename = $filename;
+	$ep->documents->document[$docNum]->file->mime_type = $mimetype;
+	$ep->documents->document[$docNum]->file->datasetid = $datasetid;
+	$ep->documents->document[$docNum]->file->hash = md5($data);
+	$ep->documents->document[$docNum]->file->hash_type = $hashtype;
+	$ep->documents->document[$docNum]->file->filesize = $filesize;
+	$ep->documents->document[$docNum]->file->mtime = date("Y-m-d H:i:s");
+	$ep->documents->document[$docNum]->file->data = base64_encode($data);
+	$ep->documents->document[$docNum]->file->data->addAttribute("encoding", $encoding);
+	$ep->documents->document[$docNum]->file->security = $security;
+	$ep->documents->document[$docNum]->file->format = $format;
+	$ep->documents->document[$docNum]->file->language = $lang;
+
+	
+        /* $FileFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum]->files->file[$filenum]; */
         
-        $FileFragment->filename = $filename;
-        $FileFragment->datasetid = $datasetid;
-        $FileFragment->mimetype = $mimetype;
-        $FileFragment->hash = md5($data);
-        $FileFragment->data = base64_encode($data);
-        $FileFragment->hash_type = $hashtype;
-        $FileFragment->filesize = $filesize;
-        $FileFragment->mtime = date("Y-m-d H:i:s");
-        $FileFragment->data->attributes()->encoding = $encoding;
+        /* $FileFragment->filename = $filename; */
+        /* $FileFragment->datasetid = $datasetid; */
+        /* $FileFragment->mimetype = $mimetype; */
+        /* $FileFragment->hash = md5($data); */
+        /* $FileFragment->data = base64_encode($data); */
+        /* $FileFragment->hash_type = $hashtype; */
+        /* $FileFragment->filesize = $filesize; */
+        /* $FileFragment->mtime = date("Y-m-d H:i:s"); */
+        /* $FileFragment->data->attributes()->encoding = $encoding; */
         
-        $DocumentFragment->mime_type = $mimetype;
-        $DocumentFragment->language = $lang;
-        $DocumentFragment->security = $security;
-        $DocumentFragment->format = $format;
-        $DocumentFragment->main = $filename;
+        /* $DocumentFragment->mime_type = $mimetype; */
+        /* $DocumentFragment->language = $lang; */
+        /* $DocumentFragment->security = $security; */
+        /* $DocumentFragment->format = $format; */
+        /* $DocumentFragment->main = $filename; */
     }
     
     
