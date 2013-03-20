@@ -1,7 +1,7 @@
 <?php
     session_start();
     $_SESSION['form_valid'] = true;
-    require_once("EPrintsWrapper.php");
+    require_once("../EPrintsWrapper.php");
 
     // Generates a date of the form "YYYY-MM-DD
     // The error checking is pretty minimal at the moment, e.g. nothing stops the user from entering
