@@ -157,7 +157,7 @@ class EPrintsWrapper
 	else $filename = $name;
 	//$this->addFileData($filename, $data, $contenttype);
 
-	$this->addDocument($data, $filename, "application/pdf", "public", "application/pdf");
+	$this->addDocument($filepath, $data, $filename, "application/pdf", "public", "text");
 	return 1;
     }
 
@@ -203,7 +203,8 @@ class EPrintsWrapper
     public function commitNewEPrint()
     {
         $post = $this->currentEPrintStructure->asXML();
-        $ch = curl_init();
+	//$post = file_get_contents("/tmp/7.xml");
+        $ch = curl_init();file_put_contents("/tmp/post.xml", $post);
         $fh = tmpfile();
         fwrite($fh, $post);
         fseek($fh, 0);
@@ -452,7 +453,7 @@ class EPrintsWrapper
      * @param integer $filenum there could be several files per document (normally just one)
      *
      */
-    public function addDocument($data, $filename, $mimetype, $security, $format, $docNum = 1, $filenum = 1)
+    public function addDocument($filepath, $data, $filename, $mimetype, $security, $format, $docNum = 1, $filenum = 1)
     {
         $filesize = strlen($data);
         $docNum -= 1;
@@ -463,20 +464,31 @@ class EPrintsWrapper
         $datasetid = "document";
         $DocumentFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum];
 
-	$ep = $this->currentEPrintStructure->eprint;
-	$ep->documents->document[$docNum]->file->filename = $filename;
-	$ep->documents->document[$docNum]->file->mime_type = $mimetype;
-	$ep->documents->document[$docNum]->file->datasetid = $datasetid;
-	$ep->documents->document[$docNum]->file->hash = md5($data);
-	$ep->documents->document[$docNum]->file->hash_type = $hashtype;
-	$ep->documents->document[$docNum]->file->filesize = $filesize;
-	$ep->documents->document[$docNum]->file->mtime = date("Y-m-d H:i:s");
-	$ep->documents->document[$docNum]->file->data = base64_encode($data);
-	$ep->documents->document[$docNum]->file->data->addAttribute("encoding", $encoding);
-	$ep->documents->document[$docNum]->file->security = $security;
-	$ep->documents->document[$docNum]->file->format = $format;
-	$ep->documents->document[$docNum]->file->language = $lang;
+	// DocumentFragment will be NULL if no documents have been added yet
+	if($DocumentFragment == NULL)
+	{
+	    
 
+	    $ep = $this->currentEPrintStructure->eprint;
+
+	    $ep->documents->document[$docNum]->files->file->filename = $filename;
+	    $ep->documents->document[$docNum]->files->file->mime_type = $mimetype;
+	    $ep->documents->document[$docNum]->files->file->datasetid = $datasetid;
+	    $ep->documents->document[$docNum]->files->file->hash = md5($data);
+	    $ep->documents->document[$docNum]->files->file->hash_type = $hashtype;
+	    $ep->documents->document[$docNum]->files->file->filesize = $filesize;
+	    $ep->documents->document[$docNum]->files->file->mtime = date("Y-m-d H:i:s");
+	    //	    $ep->documents->document[$docNum]->files->file->data = base64_encode($data);
+	    $ep->documents->document[$docNum]->files->file->data = $this->encodeData($filepath);
+	    $ep->documents->document[$docNum]->files->file->data->addAttribute("encoding", $encoding);
+	    $ep->documents->document[$docNum]->files->file->security = $security;
+	    $ep->documents->document[$docNum]->files->file->language = $lang;
+	    $ep->documents->document[$docNum]->format = $format;
+
+
+	    //$xmlstring = $this->currentEPrintStructure->asXML();
+	    //error_log("xmlstring = $xmlstring");error_log("");
+	}
 	
         /* $FileFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum]->files->file[$filenum]; */
         
@@ -522,6 +534,20 @@ class EPrintsWrapper
     private function generateNote()
     {
 	return $this->additionalInformation . "\n    SWORD: deposited by $this->depositorName ($this->depositorAffiliation)\n";
+    }
+
+
+    // make sure to check for successes in the various calls here!
+    private function encodeData($filepath)
+    {
+	$result = "";
+	$plainFile = file_get_contents($filepath);
+	$encodedFileString = base64_encode($plainFile);
+
+	$splitString = str_split($encodedFileString, 76);
+	foreach($splitString as $entry)
+	    $result = $result . "$entry\n";
+	return $result;
     }
 }
 ?>
