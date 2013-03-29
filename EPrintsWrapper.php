@@ -597,13 +597,8 @@ class EPrintsWrapper
 	$result = "";
 	$plainFile = file_get_contents($filepath);
 	$encodedFileString = base64_encode($plainFile);
-
-	// For some reason, EPrints refuses to recognize the contents unless they're split just like an EPrints
-	// export does - 77 characters per line.
-	$splitString = str_split($encodedFileString, 76);
-	foreach($splitString as $entry)
-	    $result = $result . "$entry\n";
-	return $result;
+	
+	return $encodedFileString;
     }
 
 
