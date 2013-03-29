@@ -157,8 +157,7 @@ class EPrintsWrapper
 	else $filename = $name;
 	//$this->addFileData($filename, $data, $contenttype);
 
-	//$this->addDocument($filepath, $data, $filename, "application/pdf", "public", "text");
-	$this->addDocument2($filepath, $data, $filename, "application/pdf", "public", "text");
+	$this->addDocument($filepath, $data, $filename, "application/pdf", "public", "text");
 	return 1;
     }
 
@@ -450,73 +449,9 @@ class EPrintsWrapper
      * @param string $mimetype mime-type
      * @param string $security
      * @param string $format
-     * @param integer $docnum there could be several documents per EPrint (normally just one)
-     * @param integer $filenum there could be several files per document (normally just one)
      *
      */
-    public function addDocument($filepath, $data, $filename, $mimetype, $security, $format, $docNum = 1, $filenum = 1)
-    {
-        $filesize = strlen($data);
-        $docNum -= 1;
-        $filenum -= 1;
-        $hashtype = "MD5";
-        $encoding = "base64";
-        $lang = "en";
-        $datasetid = "document";
-        $DocumentFragment = $this->currentEPrintStructure->eprint->documents->document[$docNum];
-	$documentCount = $this->countDocuments();
-	error_log("filename = $filename and currently documentcount = $documentCount");
-
-	$differentCount = count($this->currentEPrintStructure->eprint->documents->children('document'));
-	error_log("differentCount = $differentCount");
-	
-	// DocumentFragment will be NULL if no documents have been added yet. Also note that we're not allowing
-	// more than one file per document.
-	//	if($DocumentFragment == NULL)        --- try using documentCount instead
-	//{
-	//	    $ep = $this->currentEPrintStructure->eprint;
-	//    $ep->documents->document[$docNum]->files->file->filename = $filename;
-	//    $ep->documents->document[$docNum]->files->file->mime_type = $mimetype;
-	//    $ep->documents->document[$docNum]->files->file->datasetid = $datasetid;
-	//    $ep->documents->document[$docNum]->files->file->hash = md5($data);
-	//    $ep->documents->document[$docNum]->files->file->hash_type = $hashtype;
-	//    $ep->documents->document[$docNum]->files->file->filesize = $filesize;
-	//    $ep->documents->document[$docNum]->files->file->mtime = date("Y-m-d H:i:s");
-	//    $ep->documents->document[$docNum]->files->file->data = $this->encodeData($filepath);
-	//    $ep->documents->document[$docNum]->files->file->data->addAttribute("encoding", $encoding);
-	//    $ep->documents->document[$docNum]->files->file->security = $security;
-	//    $ep->documents->document[$docNum]->files->file->language = $lang;
-	//    $ep->documents->document[$docNum]->format = $format;
-
-
-	    //$xmlstring = $this->currentEPrintStructure->asXML();
-	    //error_log("xmlstring = $xmlstring");error_log("");
-	//}
-	//else
-	//	{
-	//    
-	//}
-	
-	$ep = $this->currentEPrintStructure->eprint;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->filename = $filename;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->mime_type = $mimetype;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->datasetid = $datasetid;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->hash = md5($data);
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->hash_type = $hashtype;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->filesize = $filesize;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->mtime = date("Y-m-d H:i:s");
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->data = $this->encodeData($filepath);
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->data->addAttribute("encoding", $encoding);
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->security = $security;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->files->file->language = $lang;
-	$this->currentEPrintStructure->eprint->documents->document[$documentCount]->format = $format;
-	
-	$endCount = $this->countDocuments();
-	error_log("endCount = $endCount");
-    }
-
-
-    public function addDocument2($filepath, $data, $filename, $mimetype, $security, $format, $docNum = 1, $filenum = 1)
+    public function addDocument($filepath, $data, $filename, $mimetype, $security, $format)
     {
         $filesize = strlen($data);
         $docNum -= 1;
