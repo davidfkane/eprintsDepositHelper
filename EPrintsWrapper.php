@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 class EPrintsWrapper
 {
@@ -7,7 +7,7 @@ class EPrintsWrapper
     public $password;
     public $EPrintID = 0;
     public $EPrintCreators = array();
-    public $currentEPrintStructure;
+    public $currentEPrintStructure;    // EPrints XML structure that is built up and eventually submitted to EPrints
     
     public $journalName;
     public $volume;
@@ -22,12 +22,12 @@ class EPrintsWrapper
     public $note = "";
     
     private $debug = 1;
-    private $uploadsdir = "/tmp/uploads/";
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
     private $unique_stamp;
     private $errorMessage = "";
     const ERROR_VALUE = -1;
+
     
     private function debugOutput($string)
     {
@@ -41,7 +41,16 @@ class EPrintsWrapper
             }
         }
     }
-    
+
+
+    /**
+     * Creates a new EPrintsWrapper object.
+     * @param string $servicedocument  The servicedocument URL for an EPrints repository
+     * @param string $username         A username that has the correct permissions for the given EPrints repository
+     * @param string $password         The password
+     * @param int $EPid                (Optional) An eprint ID. If not provided, a new eprint will be created.
+     * 
+     */    
     function  __construct($servicedocument, $username, $password, $EPid = false)
     {
         $this->username = $username;
@@ -50,6 +59,7 @@ class EPrintsWrapper
         $repository = explode('/', str_replace('http://', '', $servicedocument));
         $this->unique_stamp = time();
 	$this->repoURL = 'http://' . $repository[0] . '/'; $this->debugOutput("<h2 style=\"color: red\">".$this->repoURL."</h2>");
+
         if($EPid)
 	{
             $this->EPrintID = $EPid;
@@ -61,10 +71,12 @@ class EPrintsWrapper
     }
 
     
+    /**
+     * Initialize the EPrints XML for a blank generic eprint.
+     *
+     */
     private function newEPrint()
     {
-        // generate XML for new blank generic EPrint
-        // read file, and turn into SimpleXMLElement();
 	$filestring = "<?xml version='1.0' encoding='utf-8'?>
                         <eprints xmlns='http://eprints.org/ep2/data/2.0'>
                           <eprint>
@@ -74,74 +86,52 @@ class EPrintsWrapper
     }
 
 
+    /**
+     * Returns the current error message.
+     *
+     */
     public function getErrorMessage()
     {
 	return $this->errorMessage;
     }
 
-    
-    public function setXML($xmlString)
-    {
-	$this->currentEPrintStructure = new SimpleXMLElement($xmlString);
-    }
 
-
+    /**
+     * Returns the EPrints XML response for an HTTP request to a given repository URL.
+     * @param string $repoURL
+     *
+     */
     private function getEPrintsXMLFromURL($repoURL)
     {
         $username = $this->username;
         $password = $this->password;
         $ch = curl_init();          
+
         curl_setopt($ch, CURLOPT_URL, $repoURL);
         curl_setopt($ch, CURLOPT_REFERER, $this->referer);
         curl_setopt($ch, CURLOPT_USERAGENT, $this->useragent);     
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/vnd.eprints.data+xml')); // using eprints xml
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password); 
-        curl_setopt($ch, CURLOPT_HEADER, 0);            // Include header in result? (0 = yes, 1 = no)   
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Should cURL return or print out the data? (true = return, false = print)   
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);          // Timeout in seconds     
-        $output = curl_exec($ch);  // Download the given URL, and return output
-        curl_close($ch);  // Close the cURL resource, and free system resources
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        $output = curl_exec($ch);
+        curl_close($ch);
+
         $this->debugOutput("<textarea>$output</textarea>");
+
         $outputstruct = new SimpleXMLElement($output);
         return $outputstruct;
     }
-    public function getEPrintsMetadata(){
-        if($this->EPrintID != 0)
-        {
-            $this->currentEPrintStructure = $this->getEPrintsXMLFromURL($this->repoURL . '/id/eprint/' . $this->EPrintID);
-        }        
-    }
 
 
-    public function addFile($filepath, $EPrintID, $contenttype, $name = NULL)
-    {
-        if($this->EPrintID == 0)
-        {
-            $this->errorMessage = "Eprint ID not set";
-            return -1;
-        }
-	else
-	{
-            $handle = fopen($filepath, "r");
-            $contentlen = filesize($filepath);
-            $data = fread($handle, $contentlen);
-            fclose($handle);
-
-            if($name == NULL)
-	    {
-                $expl = explode('/', $filepath);
-                $filename = $expl[count($expl)-1];
-            }
-	    else $filename = $name;
-            $this->addFileData($filename, $data, $contenttype);
-            return 1;
-        }
-        
-    }
-
-
-    public function addFile2($filepath, $contenttype, $name = NULL)
+    /**
+     * Adds a file to the SWORD request. Note that this method must be called once per file AND
+     * that it must be called before commitNewEPrint().
+     *
+     */
+    public function addFile($filepath, $contenttype, $name = NULL)
     {
 	$handle = fopen($filepath, "r");
 	$contentlen = filesize($filepath);
@@ -155,56 +145,22 @@ class EPrintsWrapper
 	    $filename = $expl[count($expl)-1];
 	}
 	else $filename = $name;
-	//$this->addFileData($filename, $data, $contenttype);
 
 	$this->addDocument($filepath, $data, $filename, "application/pdf", "public", "text");
 	return 1;
     }
 
 
-
-    private function addFileData($filename, $data, $contenttype)
-    {
-        
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $this->repoURL . "/id/eprint/" . $this->EPrintID . "/contents");
-	//curl_setopt($ch, CURLOPT_URL, $EPrintURL);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: ' . $contenttype, "Content-Disposition: attachment; filename=$filename"));
-	curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-	curl_setopt($ch, CURLOPT_POST,1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, TRUE); // --data-binary
-	curl_setopt($ch, CURLOPT_USERPWD, $this->username.":".$this->password);
-	curl_setopt($ch, CURLOPT_HEADER, 1);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-	
-	// The headers returned are different from commitNewEPrint, there is now a leading 100 Continue
-	// that needs to be removed
-	$response = curl_exec($ch);
-	curl_close($ch);  // Close the cURL resource, and free system resources
-
-	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
-	$statusCode = $this->checkStatusCode($responseBody);    // cannot just call checkStatusCode(), must use $this
-
-	if($statusCode == 201)
-	{
-	    $this->debugOutput("<div class=\"textarea2\"><textarea rows='30' cols='120'>Output: ".$response."</textarea></div>");
-	}
-	else
-	{
-	    $this->errorMessage = $response;
-	    return false;
-	}
-	return true;
-    }
-
-
+    /**
+     * Finally deposits the new EPrint using the SWORD protocol.
+     * If the deposit is successful, the ID of the new eprint is returned.
+     * If the deposit fails, EPrintsWrapper::ERROR_VALUE is returned.
+     *
+     */
     public function commitNewEPrint()
     {
         $post = $this->currentEPrintStructure->asXML();
-	//$post = file_get_contents("/tmp/7.xml");
-        $ch = curl_init();file_put_contents("/tmp/post.xml", $post);
+        $ch = curl_init();
         $fh = tmpfile();
         fwrite($fh, $post);
         fseek($fh, 0);
@@ -219,7 +175,7 @@ class EPrintsWrapper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         $response = curl_exec($ch);
-	curl_close($ch);              // Close the cURL resource, and free system resources
+	curl_close($ch);
         fclose($fh);
         
 	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
@@ -229,7 +185,6 @@ class EPrintsWrapper
 	    $this->EPrintID = $this->getEPrintID($responseBody);
 	    $this->debugOutput("<textarea class=\"textarea2\">Output: ".$responseHeader."\n".$responseBody."</textarea>");
 	    return $this->getEPrintID($responseBody);
-	    //return $this->EPrintID;
 	}
 	else
 	{
@@ -239,6 +194,10 @@ class EPrintsWrapper
     }
 
 
+    /**
+     * Returns the status code provided by EPrints in response to a SWORD request. Upon failure, returns EPrintsWrapper::ERROR_VALUE
+     *
+     */
     private function checkStatusCode($header)
     {
 	$cleanedHeader = $this->cleanHeader($header);
@@ -256,11 +215,14 @@ class EPrintsWrapper
 	    }
 	}	
 	// Unable to parse out any status code at all
-	return -1;
+	return EPrintsWrapper::ERROR_VALUE;
     }
 
 
-    // Remove superflous leading '100' code from headers returned when you've added a new file to an existing EPrint
+    /**
+     * Remove superflous leading '100' code from headers returned when you've added a new file to an existing EPrint.
+     *
+     */
     private function cleanHeader($header)
     {
 	$pattern = '/^(HTTP\/1.1 100 Continue\r\n\r\n)(.*)/';
@@ -270,6 +232,10 @@ class EPrintsWrapper
     }
     
 
+    /**
+     * Given an EPrints response to a SWORD deposit, returns the ID of the new eprint.
+     *
+     */
     private function getEPrintID($response)
     {
 	$outputstruct = new SimpleXMLElement($response);
@@ -442,7 +408,7 @@ class EPrintsWrapper
     
     /**
      * Adds individual documents to the class representation of the EPrint, including the hashes
-     * and the base64 encoded files themselves.
+     * and the base64 encoded files themselves (embedded in EPrints XML).
      *
      * @param string $data very long string representing the file
      * @param string $filename name of file
@@ -466,11 +432,6 @@ class EPrintsWrapper
 	    $documentFragment = $this->currentEPrintStructure->eprint->addChild('documents');
 	else $documentFragment = $this->getDocumentFragment();
 
-	if($documentFragment == null)
-	{
-	    error_log("Got nULL df!!");
-	    exit(1);
-	}
 	$newDocument = $documentFragment->addChild('document');
 	$filesFragment = $newDocument->addChild('files');
 	$fileFragment = $filesFragment->addChild('file');
@@ -488,6 +449,10 @@ class EPrintsWrapper
     }
 
 
+    /**
+     * Returns the current <document> node, or NULL if none exists.
+     *
+     */
     private function getDocumentFragment()
     {
 	foreach($this->currentEPrintStructure->eprint->children() as $currentChild)
@@ -495,12 +460,15 @@ class EPrintsWrapper
 	    if($currentChild->getName() == 'documents')
 		return $currentChild;
 	}
-	return null;
+	return NULL;
     }
     
     
     
-    // Generates a date of the form "YYYY-MM-DD
+    /**
+     * Returns a date in the form 'YYYY-MM-DD' using the current state variables.
+     *
+     */
     private function generateDateString()
     {
 	$date = "";
@@ -518,25 +486,49 @@ class EPrintsWrapper
     }
     
     
-    // Generates a short informational note for the reviewer. EPrints XML doesn't support much depositor
-    // information, so leave it in the comments(?)
+    
+    /**
+     * Generates a short informational note for the reviewer.
+     *
+     */
     private function generateNote()
     {
 	return $this->additionalInformation . "\n    SWORD: deposited by $this->depositorName ($this->depositorAffiliation)\n";
     }
 
 
-    // make sure to check for successes in the various calls here!
+    /**
+     * Reads the given (full) file path into a string, which is then encoded using base64 and returned.
+     * Upon failure, returns NULL and sets EPrintsWrapper::errorMessage.
+     *
+     * @param string $filepath
+     *
+     */
     private function encodeData($filepath)
     {
 	$result = "";
 	$plainFile = file_get_contents($filepath);
+
+	if($plainFile == FALSE)
+	{
+	    $this->errorMessage = "Unable to open file $filepath for reading. Does the file exist? Are the permissions sufficient?";
+	    return NULL;
+	}
+
 	$encodedFileString = base64_encode($plainFile);
-	
+	if($encodedFileString == FALSE)
+	{
+	    $this->errorMessage = "Unable to encode $filepath using base64_encode";
+	    return NULL;
+	}
 	return $encodedFileString;
     }
 
 
+    /**
+     * Counts the number of <document> occurrences in the current EPrints XML.
+     *
+     */
     private function countDocuments()
     {
 	return $this->currentEPrintStructure->eprint->documents->count();
