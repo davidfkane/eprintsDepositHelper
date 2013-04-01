@@ -21,7 +21,7 @@ class EPrintsWrapper
     public $additionalInformation;
     public $note = "";
     
-    private $debug = 1;
+    private $debug = 0;
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
     private $unique_stamp;
@@ -135,7 +135,6 @@ class EPrintsWrapper
     {
 	$handle = fopen($filepath, "r");
 	$contentlen = filesize($filepath);
-	//$data = fread($handle, $contentlen);
 	$data = file_get_contents($filepath);
 	fclose($handle);
 	
@@ -179,7 +178,7 @@ class EPrintsWrapper
         fclose($fh);
         
 	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
-	$statusCode = $this->checkStatusCode($responseHeader);
+	$statusCode = $this->checkStatusCode($responseBody);
 	if($statusCode == 201)
 	{
 	    $this->EPrintID = $this->getEPrintID($responseBody);
@@ -200,7 +199,6 @@ class EPrintsWrapper
      */
     private function checkStatusCode($header)
     {
-	$cleanedHeader = $this->cleanHeader($header);
 	$pattern = '/^http\/1.1\s+(\d{3})\s+.*/';
 	$headerLines = preg_split('/$\R?^/m', $header);$this->debugOutput($headerLines); $cnt = sizeOf($headerLines);
 	foreach($headerLines as $line)
@@ -233,12 +231,18 @@ class EPrintsWrapper
     
 
     /**
-     * Given an EPrints response to a SWORD deposit, returns the ID of the new eprint.
+     * Given the second part of an EPrints response to a SWORD deposit (starts with '201'), returns the ID of the new eprint.
+     * The *full* response is expected to look like:
+     *
+     * HTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 201 Created\r\nDate: Mon, 01 Apr 2013 16:59:35 GMT\r\nServer: Apache/2.2.17 (Unix) mod_ssl/2.2.17 OpenSSL/0.9.8e-fips-rhel5 mod_perl/2.0.5 Perl/v5.8.8\r\nLocation: http://myrepo.org/id/eprint/366\r\nContent-Length: 1640\r\nETag: f5fd35f14b8aff5195a966f7abf54949\r\nContent-MD5: 1B2M2Y8AsgTpgAmY7PhCfg\r\nContent-Length: 1640\r\nContent-Type: application/atom+xml;charset=utf-8\r\n\r\n<?xml version="1.0" encoding="utf-8" ?>\n<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">\n  <link rel="self" href="http://myrepo.org/cgi/export/eprint/366/Atom/authorstest-eprint-366.xml"/>\n  <link rel="edit" href="http://myrepo.org/id/eprint/366"/>\n  <link rel="edit-media" href="http://myrepo.org/id/eprint/366/contents"/>\n  <link rel="contents" href="http://myrepo.org/id/eprint/366/contents"/>\n  <link rel="alternate" href="http://myrepo.org/id/eprint/366"/>\n  <published/>\n  <updated>2013-04-01T16:59:36Z</updated>\n  <id>http://myrepo.org/id/eprint/366</id>\n  <category term="article" label="Article" scheme="http://myrepo.org/data/eprint/type"/>\n  <category term="buffer" label="Under Review" scheme="http://eprints.org/ep2/data/2.0/eprint/eprint_status"/>\n  <link rel="http://purl.org/net/sword/terms/statement" href="http://myrepo.org/id/eprint/366"/>\n  <sword:state href="http://eprints.org/ep2/data/2.0/eprint/eprint_status/buffer"/>\n  <sword:stateDescription>This item is in review. It will not appear in the repository until it has been approved by an editor.</sword:stateDescription>\n  <sword:originalDeposit href="http://myrepo.org/id/eprint/366">\n    <sword:depositedOn/>\n    <sword:depositedBy>username</sword:depositedBy>\n  </sword:originalDeposit>\n  <title type="xhtml">titlestring</title>\n  <author>\n    <name>name</name>\n    <email></email>\n  </author>\n</entry>, referer: http://localhost/deposit_article.php
+     *
      *
      */
-    private function getEPrintID($response)
+    private function getEPrintID($responseBody)
     {
-	$outputstruct = new SimpleXMLElement($response);
+	list($statusStart, $xmlContents) = explode("\r\n\r\n", $responseBody, 2);
+
+	$outputstruct = new SimpleXMLElement($xmlContents);
 	$eprintURL = (string)$outputstruct->id;
 	$eprintID = str_replace($this->repoURL . 'id/eprint/', "", $eprintURL);
 	return $eprintID;
@@ -420,8 +424,6 @@ class EPrintsWrapper
     public function addDocument($filepath, $data, $filename, $mimetype, $security, $format)
     {
         $filesize = strlen($data);
-        $docNum -= 1;
-        $filenum -= 1;
         $hashtype = "MD5";
         $encoding = "base64";
         $lang = "en";
