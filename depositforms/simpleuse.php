@@ -80,7 +80,7 @@ echo("new_id = $new_id");
 if($new_id == EPrintsWrapper::ERROR_VALUE)
 {
 echo($wrapper->getErrorMessage());
-}
+}cd ../..
 
 
 
