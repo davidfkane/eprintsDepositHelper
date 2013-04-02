@@ -19,9 +19,9 @@
 </p>
 <hr/>
 <ul>
-<li><a href="/depositforms/simpleuse.php">Simple Action Page Example, with pre-filled variables</a>
+<li><a href="./depositforms/simpleuse.php">Simple Action Page Example, with pre-filled variables</a>
 <br/>This is designed as an easy entry point for developers who want to get a quick handle on how the class is implemented. Replace the three repository-specific variables with your own, and start making test deposits immediately.<br/>&nbsp;</li>
-<li><a href="/depositforms/deposit_article.php">Caltech Deposit Form Example</a><br/>This is a working example, as used in Caltech.</li>
+<li><a href="./depositforms/deposit_article.php">Caltech Deposit Form Example</a><br/>This is a working example, as used in Caltech.</li>
 </ul>
 <hr/>
 <p>This is an implementation of the php CURL functionality in EPrints.</p>

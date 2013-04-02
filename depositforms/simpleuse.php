@@ -12,9 +12,10 @@
 <?php
 
 // Data needed for instance of class
-$eprintsServiceDocument = "http://authorstest.library.caltech.edu/sword-app/servicedocument";
-$username = 'user';
-$password = 'pass';
+$eprintsServiceDocument = "http://witeprints/sword-app/servicedocument";
+#$eprintsServiceDocument = "http://authorstest.library.caltech.edu/sword-app/servicedocument";
+$username = 'dkane';
+$password = 'password';
 
 // Data needed to create a new EPrint
 $authors = array(
@@ -28,21 +29,21 @@ $authors = array(
         'authorfamily' => 'Ingulfsen',
         'authorID' => 'tommy@library.caltech.edu'
     )
-)
-$note = '';
-$title = '';
-$journal_title = '';
-$journal_volume = '';
-$journal_issue = '';
-$year = '';
-$month = '';
-$day = '';
-$name = '';
-$email = '';
-$affiliation = '';
-$file_path = '/path/to/file.doc';
-$file_path2 = '/path/to/file.gif';
-$file_path3 = '/path/to/file.xls';
+);
+$note = 'Note text one two three four.';
+$title = 'Testing Title for EPrintsDeposit helper';
+$journal_title = 'The Journal of Testing Repository Functionality';
+$journal_volume = '1';
+$journal_issue = '2';
+$year = '1234';
+$month = '3';
+$day = '3';
+$name = 'David Kane';
+$email = 'dkane@wit.ie';
+$affiliation = 'affiliation';
+$file_path = '/var/www/eprintsDepositHelper/depositforms/images/wit.jpeg';
+$contenttype = 'image/jpeg';
+$name = 'witlogo';
 
 
 
@@ -71,7 +72,7 @@ $wrapper->depositorAffiliation = trim($affiliation);
 $wrapper->addEPrintMetadata($wrapper->title, "article"); // construct the eprint metadata, adding type (type should actually be set beforehand)
 
 
-$wrapper->addFile2($file_path, $file_path2, $file_path3);  // add the files
+$wrapper->addFile($file_path, $contenttype, $name);  // add the files
 
 $new_id = $wrapper->commitNewEPrint();  // add new eprint, returns the unique ID of that eprint
 echo("new_id = $new_id");
