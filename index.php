@@ -1,23 +1,33 @@
 <html><body>
 <head>
     <title>eprintsDepositHelper Index.php</title>
+    
     <style>
         .textarea1{background-color: pink;}
         .textarea2{background-color: lightgreen;}
+        body{font-family: sans-serif;}
     </style>    
 </head>
 
 <h1>eprintsDepositHelper</h1>
+<h2>What is it?</h2>
+<p>It seemed to us that the process of making repository deposits to EPrints through a 3rd party website was too complex.  Many website/repository administrators face a similar challenge to our own, where they wish to give staff the ability to make deposits into the repository through a website.  Therefore, we have developed a wrapper class, specifically designed to make it trivial to enable remote EPrint deposit through PHP.  It implements a subset of the standard protocol, in combination with some uniquely EPrints capabilities, getting around the limitations that have been experienced by others to date.</p>
+<p>Because it is a encapsulated in a <em>single</em> class, is should be should be matter of plug-and-play to incorporate into existing PHP fameworks.
+</p>
+
+<p>Please feel free to start investigating it, and testing it out.  Be aware though that it is still in alpha-release and will therefore be subject to refinements and extensions of its capability, as and when we get time to work on it.
+</p>
 <hr/>
 <ul>
-<li><a href="addfile.php">Add file example</a></li>
-<li><a href="createNewEPrint.php">Create New EPrint example</a></li>
-<li><a href="/depositforms/deposit_article.php">Caltech Deposit Form Example</a></li>
-<li><a href="/depositforms/simpleuse.php">Simple Action Page Example, with pre-filled variables</a> (for developers to get a quick handle on how the class is implemented)</li>
+<li><a href="/depositforms/simpleuse.php">Simple Action Page Example, with pre-filled variables</a>
+<br/>This is designed as an easy entry point for developers who want to get a quick handle on how the class is implemented. Replace the three repository-specific variables with your own, and start making test deposits immediately.<br/>&nbsp;</li>
+<li><a href="/depositforms/deposit_article.php">Caltech Deposit Form Example</a><br/>This is a working example, as used in Caltech.</li>
 </ul>
 <hr/>
-
 <p>This is an implementation of the php CURL functionality in EPrints.</p>
+<img src="./depositforms/images/caltech.jpeg" alt="California Institute of Technology" />
+<img src="./depositforms/images/wit.jpeg" alt="Waterford Institute of Technology" />
+
 
 <!--
 <pre>
