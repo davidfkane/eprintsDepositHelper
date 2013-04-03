@@ -11,6 +11,7 @@
 
 <h1>eprintsDepositHelper</h1>
 <h2>What is it?</h2>
+<p><em>It is a class that encapsulates essential EPrints remote deposit functionality.</em></p>
 <p>It seemed to us that the process of making repository deposits to EPrints through a 3rd party website was too complex.  Many website/repository administrators face a similar challenge to our own, where they wish to give staff the ability to make deposits into the repository through a website.  Therefore, we have developed a wrapper class, specifically designed to make it trivial to enable remote EPrint deposit through PHP.  It implements a subset of the standard protocol, in combination with some uniquely EPrints capabilities, getting around the limitations that have been experienced by others to date.</p>
 <p>Because it is a encapsulated in a <em>single</em> class, is should be should be matter of plug-and-play to incorporate into existing PHP fameworks.
 </p>
@@ -19,9 +20,8 @@
 </p>
 <hr/>
 <ul>
-<li><a href="./depositforms/simpleuse.php">Simple Action Page Example, with pre-filled variables</a>
+<li><a href="./depositforms/simpleuse_form.php">Simple Form and Form Action Page Example, with pre-filled variables</a>
 <br/>This is designed as an easy entry point for developers who want to get a quick handle on how the class is implemented. Replace the three repository-specific variables with your own, and start making test deposits immediately.<br/>&nbsp;</li>
-<li><a href="./depositforms/deposit_article.php">Caltech Deposit Form Example</a><br/>This is a working example, as used in Caltech.</li>
 </ul>
 <hr/>
 <p>This is an implementation of the php CURL functionality in EPrints.</p>
