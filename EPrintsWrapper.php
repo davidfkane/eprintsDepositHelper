@@ -28,7 +28,7 @@ class EPrintsWrapper
     public $additionalInformation;
     public $note = "";
     
-    private $debug = 0;
+    private $debug = 1;
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
     private $unique_stamp;
@@ -36,7 +36,7 @@ class EPrintsWrapper
     const ERROR_VALUE = -1;
 
     
-    private function debugOutput($string)
+    public function debugOutput($string)
     {
         if($this->debug)
         {
@@ -65,7 +65,7 @@ class EPrintsWrapper
         $xmlStruct = $this->getEPrintsXMLFromURL($servicedocument, $username, $password);
         $repository = explode('/', str_replace('http://', '', $servicedocument));
         $this->unique_stamp = time();
-	$this->repoURL = 'http://' . $repository[0] . '/'; $this->debugOutput("<h2 style=\"color: red\">".$this->repoURL."</h2>");
+	$this->repoURL = 'http://' . $repository[0] . '/'; 
 
         if($EPid)
 	{
@@ -126,7 +126,7 @@ class EPrintsWrapper
         $output = curl_exec($ch);
         curl_close($ch);
 
-        $this->debugOutput("<textarea>$output</textarea>");
+        #$this->debugOutput("<hr/><textarea style=\"width: 100%\">$output</textarea>");
 
         $outputstruct = new SimpleXMLElement($output);
         return $outputstruct;
@@ -184,30 +184,36 @@ class EPrintsWrapper
 	curl_close($ch);
         fclose($fh);
         
+        
+        #print("<br>From function: eprintID is: " . $this->EPrintID . "<br/>");
 	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
-	$statusCode = $this->checkStatusCode($responseBody);
+	$statusCode = $this->checkStatusCode($responseHeader);
 	if($statusCode == 201)
 	{
 	    $this->EPrintID = $this->getEPrintID($responseBody);
-	    $this->debugOutput("<textarea class=\"textarea2\">Output: ".$responseHeader."\n".$responseBody."</textarea>");
-	    return $this->getEPrintID($responseBody);
+	    return $this->EPrintID;
 	}
 	else
 	{
 	    $this->errorMessage = $response;
 	    return EPrintsWrapper::ERROR_VALUE;
 	}
+        
+        
     }
 
 
     /**
      * Returns the status code provided by EPrints in response to a SWORD request. Upon failure, returns EPrintsWrapper::ERROR_VALUE
+     * The value should be 201, or we return an error.
      *
      */
-    private function checkStatusCode($header)
+    public function checkStatusCode($header)
     {
+        print "header ==================================================================================== <pre>$header </pre>";
 	$pattern = '/^http\/1.1\s+(\d{3})\s+.*/';
-	$headerLines = preg_split('/$\R?^/m', $header);$this->debugOutput($headerLines); $cnt = sizeOf($headerLines);
+	$headerLines = preg_split('/$\R?^/m', $header);
+        $cnt = sizeOf($headerLines);
 	foreach($headerLines as $line)
 	{
 	    $lowerCase = strtolower($line);
@@ -245,12 +251,17 @@ class EPrintsWrapper
      *
      *
      */
-    private function getEPrintID($responseBody)
+    public function getEPrintID($responseBody)
     {
+        
 	list($statusStart, $xmlContents) = explode("\r\n\r\n", $responseBody, 2);
-
-	$outputstruct = new SimpleXMLElement($xmlContents);
-	$eprintURL = (string)$outputstruct->id;
+        if(!isset($xmlContents)){
+            $xmlContents = $statusStart;
+            # this is because the response does not always come with a header.
+        }
+        $outputstruct = new SimpleXMLElement($xmlContents);
+	$eprintURL = $outputstruct->id;
+        $this->debugOutput("<h2>Eprint URL: ".$eprintURL."</h2>");
 	$eprintID = str_replace($this->repoURL . 'id/eprint/', "", $eprintURL);
 	return $eprintID;
     }

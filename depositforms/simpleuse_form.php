@@ -36,7 +36,7 @@ $authors = array(
 ); 
 #$note = 'Note text one two three four.';
 ?>
-<form action="./simpleuse.php" method="post">
+<form action="./simpleuse.php" method="post"  enctype="multipart/form-data">
 <fieldset>
     <legend>General Deposit Metadata</legend>
     
@@ -57,13 +57,13 @@ $authors = array(
     <fieldset>
         <legend>Author Metadata (repeating 'n' times)</legend>
         <hr/>
-        <input type="text" name="authorgiven"  value="David" /> <label for="authorgiven">authorgiven</label><br/> 
-        <input type="text" name="authorfamily"  value="Kane" /> <label for="authorfamily">authorfamily</label><br/> 
-        <input type="text" name="authorID"  value="dkane@wit.ie" /> <label for="authorID">authorID</label><br/> 
+        <input type="text" name="authorgiven[]"  value="David" /> <label for="authorgiven">authorgiven</label><br/> 
+        <input type="text" name="authorfamily[]"  value="Kane" /> <label for="authorfamily">authorfamily</label><br/> 
+        <input type="text" name="authorID[]"  value="dkane@wit.ie" /> <label for="authorID">authorID</label><br/> 
         <hr/>
-        <input type="text" name="authorgiven"  value="Tommy" /> <label for="authorgiven">authorgiven</label><br/> 
-        <input type="text" name="authorfamily"  value="Ingulfsen" /> <label for="authorfamily">authorfamily</label><br/> 
-        <input type="text" name="authorID"  value="tingulfsen@library.caltech.edu" /> <label for="authorID">authorID</label><br/> 
+        <input type="text" name="authorgiven[]"  value="Tommy" /> <label for="authorgiven">authorgiven</label><br/> 
+        <input type="text" name="authorfamily[]"  value="Ingulfsen" /> <label for="authorfamily">authorfamily</label><br/> 
+        <input type="text" name="authorID[]"  value="tingulfsen@library.caltech.edu" /> <label for="authorID">authorID</label><br/> 
         <hr/>
     </fieldset>
 </fieldset>

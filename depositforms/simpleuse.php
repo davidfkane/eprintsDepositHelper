@@ -1,5 +1,9 @@
 <!DOCTYPE html>
+<?php
 
+error_reporting(E_ALL);
+
+?>
 <html>
 <head>
     <title>Usage Explanation</title>
@@ -12,38 +16,28 @@
 <?php
 
 // Data needed for instance of class
+
 $eprintsServiceDocument = "http://witeprints/sword-app/servicedocument";
 #$eprintsServiceDocument = "http://authorstest.library.caltech.edu/sword-app/servicedocument";
 $username = 'dkane';
 $password = 'password';
 
-// Data needed to create a new EPrint
-$authors = array(
-    array(
-        'authorgiven' => 'David',
-        'authorfamily' => 'Kane',
-        'authorID' => 'dkane@wit.ie'
-    ),
-    array(
-        'authorgiven' => 'Tommy',
-        'authorfamily' => 'Ingulfsen',
-        'authorID' => 'tommy@library.caltech.edu'
-    )
-);
-$note = 'Note text one two three four.';
-$title = 'Testing Title for EPrintsDeposit helper';
-$journal_title = 'The Journal of Testing Repository Functionality';
-$journal_volume = '1';
-$journal_issue = '2';
-$year = '1234';
-$month = '3';
-$day = '3';
-$name = 'David Kane';
-$email = 'dkane@wit.ie';
-$affiliation = 'affiliation';
-$file_path = '/var/www/eprintsDepositHelper/depositforms/images/wit.jpeg';
-$contenttype = 'image/jpeg';
-$name = 'witlogo';
+#$note = $_POST['note'];
+$title = $_POST['title'];
+$journal_title = $_POST['journal_title'];
+$journal_volume = $_POST['journal_volume'];
+$journal_issue = $_POST['journal_issue'];
+$year = $_POST['year'];
+$month = $_POST['month'];
+$day = $_POST['day'];
+$name = $_POST['name'];
+$email = $_POST['email'];
+$affiliation = $_POST['affiliation'];
+
+
+#$file_path = $_POST['file_path'];
+#$contenttype = $_POST['contenttype'];
+#$name = $_POST['name'];
 
 
 
@@ -52,12 +46,13 @@ require_once('../EPrintsWrapper.php');
 // we requre the class
 
 $wrapper = new EPrintsWrapper($eprintsServiceDocument, $username, $password);
-for($i=0; $i<count($authors); $i++)
+
+for($i=0; $i<count($_POST['authorgiven']); $i++)
 {
-$wrapper->addCreator(trim($authors[$i]['authorfamily']), trim($authors[$i]['authorgiven']), trim($authors[$i]['authorID']));
+    $wrapper->addCreator(trim($_POST['authorfamily'][$i]), trim($_POST['authorgiven'][$i]), trim($_POST['authorID'][$i]));
 }
 
-$wrapper->note = trim($note);
+#$wrapper->note = trim($note);
 $wrapper->title = trim($title);
 $wrapper->journalName = trim($journal_title);
 $wrapper->volume = trim($journal_volume);
@@ -70,21 +65,30 @@ $wrapper->depositorEmail = trim($email);
 $wrapper->depositorAffiliation = trim($affiliation);
 
 $wrapper->addEPrintMetadata($wrapper->title, "article"); // construct the eprint metadata, adding type (type should actually be set beforehand)
+#$wrapper->addFile($file_path, $contenttype, $name);  // add the files
 
+#phpinfo();
+$filecount = count($_FILES['fileupload']['tmp_name']);
+for($i=0; $i<$filecount; $i++)
+{
+    if(is_uploaded_file($_FILES['fileupload']['tmp_name'][$i]))
+    {
+        if(TRUE)
+        {
+            print "<br/>Adding a new file:";
+            $wrapper->addFile($_FILES['fileupload']['tmp_name'][$i], $_FILES['fileupload']['type'][$i], $_FILES['fileupload']['name'][$i]);
+        }
+    }
+}
+print"<hr/>";
+$new_id = $wrapper->commitNewEPrint();
 
-$wrapper->addFile($file_path, $contenttype, $name);  // add the files
-
-$new_id = $wrapper->commitNewEPrint();  // add new eprint, returns the unique ID of that eprint
-echo("new_id = $new_id");
-
+$wrapper->debugOutput("<h2>EPid: ".$wrapper->EPrintID."</h2>");
+print "New eprint will be at: <a href=\"http://witeprints/cgi/users/home?screen=EPrint%3A%3AView&eprintid=".$new_id."\">".$new_id."</a>";
 if($new_id == EPrintsWrapper::ERROR_VALUE)
 {
 echo($wrapper->getErrorMessage());
-}cd ../..
-
-
-
-
+}
 
 ?>
 </body>
