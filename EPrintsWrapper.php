@@ -152,7 +152,7 @@ class EPrintsWrapper
 	}
 	else $filename = $name;
 
-	$this->addDocument($filepath, $data, $filename, "application/pdf", "public", "text");
+	$this->addDocument($filepath, $data, $filename, $contenttype, "public", "text");
 	return 1;
     }
 
