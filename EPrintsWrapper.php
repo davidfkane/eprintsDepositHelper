@@ -1,4 +1,10 @@
- <?php
+<?php
+/**
+ * EPrintsWrapper Class
+ *
+ * This class encapsulates essential remote EPrints deposit functionality to allow it to be used in other websites.
+ * 
+ */
 
 class EPrintsWrapper
 {
@@ -15,6 +21,7 @@ class EPrintsWrapper
     public $year;
     public $month;
     public $day;
+    public $date;
     public $depositorName;
     public $depositorEmail;
     public $depositorAffiliation;
