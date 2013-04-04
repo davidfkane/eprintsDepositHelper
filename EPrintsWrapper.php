@@ -28,7 +28,7 @@ class EPrintsWrapper
     public $additionalInformation;
     public $note = "";
     
-    private $debug = 1;
+    private $debug = 0;
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
     private $unique_stamp;
@@ -184,9 +184,28 @@ class EPrintsWrapper
 	curl_close($ch);
         fclose($fh);
         
+        $this->debugOutput("<textarea>".$response."</textarea>");
         
-        #print("<br>From function: eprintID is: " . $this->EPrintID . "<br/>");
 	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
+        
+	###############################################
+	#
+	# There's a need for a more robust handling of the headers, as a dual header sometimes comes in twice.
+	# E.g.
+	#
+	#   HTTP/1.1 100 Continue
+	#
+	#   HTTP/1.1 201 Created
+	#   Rest of headers...
+        #
+        #   <start of body> ...
+        #
+        ###############################################
+        
+        if($responseHeader == 'HTTP/1.1 100 Continue'){           
+            list($responseHeader, $responseBody) = explode("\r\n\r\n", $responseBody, 2);
+        }
+        
 	$statusCode = $this->checkStatusCode($responseHeader);
 	if($statusCode == 201)
 	{
@@ -200,6 +219,8 @@ class EPrintsWrapper
 	}
         
         
+        $wrapper->debugOutput("<br>From function: eprintID is: " . $this->EPrintID . "<br/>");
+        
     }
 
 
@@ -210,7 +231,7 @@ class EPrintsWrapper
      */
     public function checkStatusCode($header)
     {
-        print "header ==================================================================================== <pre>$header </pre>";
+        $this->debugOutput("header:<br/><pre>$header</pre>");
 	$pattern = '/^http\/1.1\s+(\d{3})\s+.*/';
 	$headerLines = preg_split('/$\R?^/m', $header);
         $cnt = sizeOf($headerLines);

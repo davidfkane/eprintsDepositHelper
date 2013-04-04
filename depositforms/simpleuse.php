@@ -75,19 +75,19 @@ for($i=0; $i<$filecount; $i++)
     {
         if(TRUE)
         {
-            print "<br/>Adding a new file:";
+            #print "<br/>Adding a new file:";
             $wrapper->addFile($_FILES['fileupload']['tmp_name'][$i], $_FILES['fileupload']['type'][$i], $_FILES['fileupload']['name'][$i]);
         }
     }
 }
-print"<hr/>";
+$wrapper->debugOutput("<hr/>");
 $new_id = $wrapper->commitNewEPrint();
 
-$wrapper->debugOutput("<h2>EPid: ".$wrapper->EPrintID."</h2>");
-print "New eprint will be at: <a href=\"http://witeprints/cgi/users/home?screen=EPrint%3A%3AView&eprintid=".$new_id."\">".$new_id."</a>";
+print("<h2>Success!</h2>");
+print("New eprint will be at: <a href=\"http://witeprints/cgi/users/home?screen=EPrint%3A%3AView&eprintid=".$new_id."\" target=\"_blank\">".$new_id."</a>");
 if($new_id == EPrintsWrapper::ERROR_VALUE)
 {
-echo($wrapper->getErrorMessage());
+$wrapper->debugOutput($wrapper->getErrorMessage());
 }
 
 ?>
