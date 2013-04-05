@@ -67,17 +67,21 @@ $wrapper->depositorAffiliation = trim($affiliation);
 $wrapper->addEPrintMetadata($wrapper->title, "article"); // construct the eprint metadata, adding type (type should actually be set beforehand)
 #$wrapper->addFile($file_path, $contenttype, $name);  // add the files
 
-#phpinfo();
+// phpinfo();
 $filecount = count($_FILES['fileupload']['tmp_name']);
 for($i=0; $i<$filecount; $i++)
 {
     if(is_uploaded_file($_FILES['fileupload']['tmp_name'][$i]))
     {
-        if(TRUE)
-        {
-            #print "<br/>Adding a new file:";
-            $wrapper->addFile($_FILES['fileupload']['tmp_name'][$i], $_FILES['fileupload']['type'][$i], $_FILES['fileupload']['name'][$i]);
-        }
+       
+        $wrapper->addFile(
+            $_FILES['fileupload']['tmp_name'][$i],
+            $_FILES['fileupload']['type'][$i],
+            $_FILES['fileupload']['name'][$i],
+            $_POST['filesecurity'][$i],
+            $_POST['fileformat'][$i],
+            $_POST['fileembargo'][$i]
+        );
     }
 }
 $wrapper->debugOutput("<hr/>");
