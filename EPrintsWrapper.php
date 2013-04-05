@@ -28,7 +28,7 @@ class EPrintsWrapper
     public $additionalInformation;
     public $note = "";
     
-    private $debug = 0;
+    private $debug = 1;
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
     private $unique_stamp;
@@ -136,23 +136,30 @@ class EPrintsWrapper
     /**
      * Adds a file to the SWORD request. Note that this method must be called once per file AND
      * that it must be called before commitNewEPrint().
+     * 
+     * @param string $filepath local server path of uploaded file
+     * @param string $contenttype MIME type of file
+     * @param string $name name to be given to file
+     * @param string $security is it visible to public or only accessible to users or staffonly (Values: public, staffonly, validuser)
+     * @param string $type type of content (Values: text, slideshow, image, video ,audio, archive, other)
+     * @param string $embargo date of embargo epiry (optional)
      *
      */
-    public function addFile($filepath, $contenttype, $name = NULL)
+    public function addFile($filepath, $contenttype, $filename, $security, $type, $embargo = NULL)
     {
 	$handle = fopen($filepath, "r");
 	$contentlen = filesize($filepath);
 	$data = file_get_contents($filepath);
 	fclose($handle);
 	
-	if($name == NULL)
+	if($filename == NULL)
 	{
 	    $expl = explode('/', $filepath);
 	    $filename = $expl[count($expl)-1];
 	}
-	else $filename = $name;
+	
 
-	$this->addDocument($filepath, $data, $filename, $contenttype, "public", "text");
+	$this->addDocument($data, $filepath, $contenttype, $filename, $security, $type, $embargo);
 	return 1;
     }
 
@@ -184,7 +191,8 @@ class EPrintsWrapper
 	curl_close($ch);
         fclose($fh);
         
-        $this->debugOutput("<textarea>".$response."</textarea>");
+        #$this->debugOutput("<textarea>".$response."</textarea>");
+        $this->debugOutput("<textarea style='background-color: ivory; border dashed 2px red;'>".$post."</textarea>");
         
 	list($responseHeader, $responseBody) = explode("\r\n\r\n", $response, 2);
         
@@ -274,8 +282,8 @@ class EPrintsWrapper
      */
     public function getEPrintID($responseBody)
     {
-        
-	list($statusStart, $xmlContents) = explode("\r\n\r\n", $responseBody, 2);
+        $this->debugOutput("<textarea style=\"background-color: lavender\"> ".$responseBody."</textarea>");
+	@list($statusStart, $xmlContents) = explode("\r\n\r\n", $responseBody, 2);
         if(!isset($xmlContents)){
             $xmlContents = $statusStart;
             # this is because the response does not always come with a header.
@@ -460,14 +468,14 @@ class EPrintsWrapper
      * @param string $format
      *
      */
-    public function addDocument($filepath, $data, $filename, $mimetype, $security, $format)
+    
+    public function addDocument($data, $filepath, $contenttype, $filename, $security, $type, $embargo)
     {
         $filesize = strlen($data);
         $hashtype = "MD5";
         $encoding = "base64";
         $lang = "en";
         $datasetid = "document";
-
 
         if($this->countDocuments() == 0)
 	    $documentFragment = $this->currentEPrintStructure->eprint->addChild('documents');
@@ -477,16 +485,19 @@ class EPrintsWrapper
 	$filesFragment = $newDocument->addChild('files');
 	$fileFragment = $filesFragment->addChild('file');
 	$fileFragment->addChild('filename', $filename);
-	$fileFragment->addChild('mime_type', $mimetype);
+	$fileFragment->addChild('mime_type', $contenttype);
 	$fileFragment->addChild('datasetid', $datasetid);
 	$fileFragment->addChild('hash', md5($data));
 	$fileFragment->addChild('hash_type', $hashtype);
 	$fileFragment->addChild('filesize', $filesize);
 	$fileFragment->addChild('mtime', date("Y-m-d H:i:s"));
-	$fileFragment->addChild('data', $this->encodeData($filepath));
 	$fileFragment->addChild('security', $security);
 	$fileFragment->addChild('language', $lang);
-	$newDocument->addChild('format', $format);
+	$fileFragment->addChild('data', $this->encodeData($filepath));
+        if($embargo != NULL){
+            $fileFragment->addChild('date_embargo', $embargo);
+        }
+	$newDocument->addChild('format', $type);
     }
 
 
