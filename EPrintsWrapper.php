@@ -532,8 +532,8 @@ class EPrintsWrapper
 	    $date = $date . "-" . $this->month;
 	else return $date;
 	
-	if(!is_null($this->date) && strlen($this->date) > 0 && $this->date != "Unspecified")
-	    $date = $date . "-" . $this->date;
+	if(!is_null($this->day) && strlen($this->day) > 0 && $this->day != "Unspecified")
+	    $date = $date . "-" . $this->day;
 	return $date;
     }
     
