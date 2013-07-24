@@ -15,9 +15,23 @@ class EPrintsWrapper
     public $EPrintCreators = array();
     public $currentEPrintStructure;    // EPrints XML structure that is built up and eventually submitted to EPrints
     
+    #journal
     public $journalName;
     public $volume;
     public $issue;
+    public $issn;
+    
+    #conference
+    public $event_title;
+    public $event_type;
+    public $pres_type;
+    public $event_location;
+    
+    #book_section, book
+    public $book_title;
+    public $isbn;
+    public $publisher;
+    
     public $year;
     public $month;
     public $day;
@@ -27,6 +41,15 @@ class EPrintsWrapper
     public $depositorAffiliation;
     public $additionalInformation;
     public $note = "";
+    public $ispublished;
+    public $refereed;
+    
+    
+    public $subjects;
+    public $divisions;
+    public $ep_abstract;
+    public $official_url;
+    public $date_type;
     
     private $debug = 1;
     private $referer = "http://library.wit.ie/eprints/deposit/form";
@@ -436,9 +459,23 @@ class EPrintsWrapper
         $ep = $this->currentEPrintStructure->eprint;
         
         $ep->title = $title;
+	$ep->ispublished = $this->ispublished;
+        foreach($this->divisions as $division)
+        {
+            $ep->divisions->item[$count] = $division[$count];
+            $count++;
+        }
+        $count = 0;
+        foreach($this->subjects as $subject)
+        {
+            $ep->subjects->item[$count] = $subject[$count];
+            $count++;
+        }
+        $count = 0;
         $ep->eprint_status = $status;
         $ep->type = $type;
         $ep->metadata_visibility = $mdataVis;
+        $ep->abstract = $this->ep_abstract;
         foreach($this->EPrintCreators as $creator)
         {
             $ep->creators->item[$count]->name->family = $creator['family'];
@@ -446,13 +483,31 @@ class EPrintsWrapper
             $ep->creators->item[$count]->id = $creator['id'];
             $count++;
         }
-
-	$ep->publication = $this->journalName;
-	$ep->volume = $this->volume;
-	$ep->issue = $this->issue;
+	$ep->date = $this->date;
+	$ep->date_type = $this->date_type;
+        if($type == 'article'){
+            $ep->publication = $this->journalName;
+            $ep->volume = $this->volume;
+            $ep->issue = $this->issue;  
+            $ep->issn = $this->issn; 
+        }elseif($type == 'conference_item'){
+            $ep->pres_type = $this->pres_type;
+            $ep->event_title = $this->event_title;
+            $ep->event_type = $this->event_type;
+            $ep->event_location = $this->event_location;
+        }elseif($type == 'book_section'){
+            $ep->book_title = $this->book_title;
+            $ep->publisher = $this->publisher;
+            $ep->isbn = $this->isbn;
+        }elseif($type == 'book'){
+            $ep->publisher = $this->publisher;
+            $ep->isbn = $this->isbn;
+        }
 	$ep->date = $this->generateDateString();
 	$ep->contact_email = $this->depositorEmail;
 	$ep->note = $this->additionalInformation;
+	$ep->refereed = $this->refereed;
+	$ep->official_url = $this->official_url;
     }
     
     
