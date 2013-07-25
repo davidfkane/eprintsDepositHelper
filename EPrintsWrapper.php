@@ -51,7 +51,7 @@ class EPrintsWrapper
     public $official_url;
     public $date_type;
     
-    private $debug = 1;
+    private $debug = 0;
     private $referer = "http://library.wit.ie/eprints/deposit/form";
     private $useragent = "MozillaXYZ/1.0";
     private $unique_stamp;
