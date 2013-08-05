@@ -14,3 +14,10 @@ changes in the way EPrints handles SWORD between version 3.2 and 3.3. Whereas EP
 interface in EPrints 3.3 [here](http://wiki.eprints.org/w/API:EPrints/Apache/CRUD).
 
 
+Use
+---
+
+EPrintsWrapper.php is the core tool, and can be used to create new eprints on your EPrints server. Note that while the
+EPrints API supports the full set of CRUD operations, EPrintsWrapper.php does not (yet) support reading, updating or
+deleting existing eprints. To explain the functionality, let's take a quick look at the sample form depositforms/simpleuse_form.php.
+
