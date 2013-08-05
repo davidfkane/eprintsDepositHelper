@@ -19,5 +19,11 @@ Use
 
 EPrintsWrapper.php is the core tool, and can be used to create new eprints on your EPrints server. Note that while the
 EPrints API supports the full set of CRUD operations, EPrintsWrapper.php does not (yet) support reading, updating or
-deleting existing eprints. To explain the functionality, let's take a quick look at the sample form depositforms/simpleuse_form.php.
+deleting existing eprints. To explain the how to use it, let's take a quick look at the sample form [depositforms/simpleuse_form.php](https://github.com/davidfkane/eprintsDepositHelper/blob/master/depositforms/simpleuse_form.php).
 
+simpleuse_form.php first sets up a basic HTML form, and then creates a new EPrintsWrapper:
+
+```
+require_once('../EPrintsWrapper.php');
+$wrapper = new EPrintsWrapper($eprintsServiceDocument, $username, $password);
+```
