@@ -29,8 +29,7 @@ $wrapper = new EPrintsWrapper($eprintsServiceDocument, $username, $password);
 ```
 
 When creating the wrapper, you need to supply the URL of the [service document](http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#protocoloperations_retreivingservicedocument). The SWORD service document specifies the available collections, upload sizes and formats that
-EPrints will accept. A user name and password for EPrints is also required. It is recommended that you create a separate account for
-use with SWORD, with only the minimal permissions necessary to deposit new eprints.
+EPrints will accept. A user name and password for EPrints is also required.
 
 Having created the wrapper, the metadata that the user entered in the form is then added:
 
