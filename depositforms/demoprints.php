@@ -1,9 +1,10 @@
 <?php
-if($_SERVER["HTTPS"] != "on")
-{
-    header("Location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
-    exit();
-}
+# // ONLY USE IF WE WANT TO ENSURE THIS IS ON HTTPS
+#if($_SERVER["HTTPS"] != "on")
+#{
+#    header("Location: https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"]);
+#    exit();
+#}
 ?><!DOCTYPE html>
 <html>
 <head>
@@ -636,7 +637,7 @@ if(!isset($_POST['divisions'])){
 		$official_url = $_POST['url'];
 		$refereed = $_POST['refereed'];
 		
-		require_once('EPrintsWrapper.php');
+		require_once('../EPrintsWrapper.php');
 		// we requre the class
 		
 		$wrapper = new EPrintsWrapper($eprintsServiceDocument, $username, $password);
@@ -697,7 +698,7 @@ if(!isset($_POST['divisions'])){
 				$file_info = new finfo(FILEINFO_MIME);  // object oriented approach!
 				$mime_type = $file_info->buffer(file_get_contents($tmpname));  // e.g. gives "image/jpeg"
 				$mime_typearray = explode(';', $mime_type);
-			    print("Mime: s" . trim($mime_typearray[0]) . "s");
+				# print("Mime: " . trim($mime_typearray[0]))
 				$wrapper->addFile(
 					$tmpname,
 					trim($mime_typearray[0]),
