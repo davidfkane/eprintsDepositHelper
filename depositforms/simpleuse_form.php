@@ -528,7 +528,6 @@ if(!isset($_POST['divisions'])){
     </form>
 <?php
 }else{
-    
     // Data needed for instance of class
 
     $eprintsServiceDocument = "http://witeprints/sword-app/servicedocument";
@@ -540,9 +539,7 @@ if(!isset($_POST['divisions'])){
     $password = $_POST['password'];
     
     $divisions = $_POST['divisions'];
-    $subjects = $_POST['subjects'];
-    
-    
+    $subjects = $_POST['subjects'];    
     $date_type = $_POST['datetype'];
     $date = $_POST['date'];
     $date_ymd = explode('-', $date);

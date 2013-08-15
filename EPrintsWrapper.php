@@ -462,13 +462,13 @@ class EPrintsWrapper
 	$ep->ispublished = $this->ispublished;
         foreach($this->divisions as $division)
         {
-            $ep->divisions->item[$count] = $division[$count];
+            $ep->divisions->item[$count] = $division;
             $count++;
         }
         $count = 0;
         foreach($this->subjects as $subject)
         {
-            $ep->subjects->item[$count] = $subject[$count];
+            $ep->subjects->item[$count] = $subject;
             $count++;
         }
         $count = 0;
