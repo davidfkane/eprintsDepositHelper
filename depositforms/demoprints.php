@@ -575,14 +575,16 @@ if(!isset($_POST['divisions'])){
 }else{
     
     // Data needed for instance of class
-	$validemail = false;
-    for($i=0; $i<count($_POST['authorID']); $i++)
-    {
-		$emaildomain = explode('@',$_POST['authorID'][$i]);
-        if(strtolower($emaildomain[1]) == 'wit.ie'){
-			$validemail = true;
-		}
-    }
+
+$validemail = true;
+#### THIS BIT OF CODE ONLY CHECKS IF THE EMAIL OF AT LEAST ONE AUTHOR/EDITOR IS ONE OF OUR OWN INSTITUTION	
+#	$validemail = false;
+#   	for($i=0; $i<count($_POST['authorID']); $i++)
+#   	{
+#		$emaildomain = explode('@',$_POST['authorID'][$i]);
+#       		if(strtolower($emaildomain[1]) == 'wit.ie'){$validemail = true;}
+#   	}
+
 	if($validemail){
 	
 		$eprintsServiceDocument = "http://demoprints.eprints.org/sword-app/servicedocument";
