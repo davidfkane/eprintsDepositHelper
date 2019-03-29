@@ -15,7 +15,6 @@
     <script src="/depositforms/js/jquery-ui.min.js"></script>
     <script src="/depositforms/js/jquery.validate.js"></script>
     <script src="/depositforms/js/additional-methods.js"></script>
-    
     <script type="text/javascript">
         $( document ).ready(function() {
 			$.validator.setDefaults({
